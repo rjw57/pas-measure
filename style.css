@@ -1,0 +1,7 @@
+.record-preview-image { width: 10em; }
+
+#main-content {
+  position: absolute; bottom: 0; left: 0; right: 0; top: 50px;
+}
+
+#record-map { position: absolute; bottom: 0; left: 0; right: 0; top: 0; }
