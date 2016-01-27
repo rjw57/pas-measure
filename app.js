@@ -1,70 +1,8 @@
 (function(){
 
-var recordMap, recordImageLayer, recordImage;
-
-// Map object of type { x: ..., y: ..., zoom: ... } to image coord.
-function tileCoordToImageCoord(coord, zoom) {
-  return {
-    x: coord.x / Math.pow(2, zoom),
-    y: coord.y / Math.pow(2, zoom)
-  };
-}
-
-ImageTileLayer = L.TileLayer.Canvas.extend({
-  options: {
-    async: true,
-    maxZoom: 23,
-    minZoom: 0,
-    continuousWorld:true
-  },
-
-  initialize: function() {
-    this._image = null;
-  },
-
-  drawTile: function(canvas, tilePoint, zoom) {
-    var ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#bbb';
-    ctx.fillRect(0, 0, 0.5*canvas.width, 0.5*canvas.height);
-    ctx.fillRect(0.5*canvas.width, 0.5*canvas.height, 0.5*canvas.width, 0.5*canvas.height);
-    ctx.fillStyle = '#444';
-    ctx.fillRect(0.5*canvas.width, 0, 0.5*canvas.width, 0.5*canvas.height);
-    ctx.fillRect(0, 0.5*canvas.height, 0.5*canvas.width, 0.5*canvas.height);
-    if(this._image) {
-      var minPt = tileCoordToImageCoord(tilePoint, zoom),
-          maxPt = tileCoordToImageCoord({ x: tilePoint.x+1, y: tilePoint.y+1 }, zoom);
-          imScale = this._image.width;
-
-      ctx.drawImage(this._image,
-                    minPt.x * imScale, minPt.y * imScale,
-                    (maxPt.x - minPt.x) * imScale, (maxPt.y - minPt.y) * imScale,
-                    0, 0, this.options.tileSize, this.options.tileSize);
-    }
-    console.log(tileCoordToImageCoord(tilePoint, zoom));
-    this.tileDrawn(canvas);
-  },
-
-  setImage: function(image) {
-    this._image = image;
-    console.log('new img:');
-    console.log(this._image);
-    this.redraw();
-  },
-
-  getImage: function() {
-    return this._image;
-  },
-});
-
-imageTileLayer = function() {
-  return new ImageTileLayer();
-}
+var meas = imageMeasure('record-map');
 
 function entry() {
-  // Create leaflet UI
-  recordMap = L.map('record-map', { minZoom: 1 });
-  recordImageLayer = imageTileLayer().addTo(recordMap);
-  recordMap.setView([0, 0], 2);
 
   // Wire up change and input events for database record modal
   $('#database-record-modal-url').on('change input', databaseRecordModalUpdate);
@@ -84,11 +22,55 @@ function entry() {
 
   // Is there a location hash?
   if(window.location.hash) {
-    setCurrentRecordJsonUrl(getRecordJsonUrl(window.location.hash.substr(1)));
+    loadRecord(window.location.hash.substr(1));
   } else {
     showDatabaseRecordModal();
   }
 }
+
+function ImageMeasure(elementId) {
+  var self = this;
+
+  var projection = new ol.proj.Projection({
+    code: 'flat-image',
+    units: 'pixels',
+    extent: [0, 0, 512, 512],
+  });
+
+  var map = new ol.Map({
+    target: 'record-map',
+    controls: [],
+    view: new ol.View({
+      center: [0, 0], projection: projection, zoom: 1,
+    }),
+  });
+
+  var image = null, imageLayer = null;
+
+  self.getImage = function() { return image; }
+
+  self.setImage = function(newImage) {
+    if(imageLayer) { map.removeLayer(imageLayer); }
+    image = newImage;
+    if(!image) { return; }
+
+    var extent = [0, 0, image.width, image.height];
+    projection.setExtent(extent);
+
+    imageLayer = new ol.layer.Image({
+      source: new ol.source.ImageStatic({
+        url: image.src,
+        projection: projection,
+        imageExtent: extent
+      }),
+    });
+    map.addLayer(imageLayer);
+
+    map.getView().fit(extent, map.getSize());
+  }
+}
+
+function imageMeasure(elementId) { return new ImageMeasure(elementId); }
 
 // The current database record
 var currentRecord = null;
@@ -97,29 +79,27 @@ var currentRecord = null;
 function compileTemplate(id) { return Handlebars.compile($('#' + id).html()); }
 var recordPreviewPanelTemplate = compileTemplate('record-preview-template');
 
-// Set the JSON URL for the record we're actually working on
-function setCurrentRecordJsonUrl(jsonUrl) {
+// Triggers a load of a new record from the passed URL/id
+function loadRecord(urlOrId) {
+  var jsonUrl = getRecordJsonUrl(urlOrId);
   loadRecordFromJsonUrl(jsonUrl).then(setCurrentRecord);
 }
 
 // Set the current record
 function setCurrentRecord(record) {
   currentRecord = record;
-
   // That's it if there's no record
   if(!currentRecord) { return; }
+
+  window.location.hash = record.id;
 
   // Do we have an image URL?
   var imageUrl = null, image = document.createElement('img');
   if(currentRecord.imagedir && currentRecord.filename) {
     imageUrl = 'https://finds.org.uk/' + currentRecord.imagedir +
       '/' + currentRecord.filename;
-
-    image.onload = function() { recordImageLayer.redraw(); }
+    image.onload = function() { meas.setImage(image); }
     image.src = imageUrl;
-    recordImageLayer.setImage(image);
-  } else {
-    recordImageLayer.setImage(null);
   }
 
   console.log(record);
@@ -207,10 +187,8 @@ function showDatabaseRecordModal() {
 }
 
 function databaseRecordModalLoad() {
-  var jsonUrl = getRecordJsonUrl($('#database-record-modal-url').val());
+  loadRecord($('#database-record-modal-url').val());
   $('#database-record-modal').modal('hide');
-  window.location.hash = $('#database-record-modal-url').val();
-  setCurrentRecordJsonUrl(jsonUrl);
 }
 
 entry();
