@@ -1,7 +1,11 @@
 .record-preview-image { width: 10em; }
 
 #main-content {
-  position: absolute; bottom: 0; left: 0; right: 0; top: 50px;
+  position: absolute; bottom: 0; left: 0; right: 0; top: 0;
 }
 
-#record-map { position: absolute; bottom: 0; left: 0; right: 0; top: 0; }
+#record-map { width: 100%; height: 100%; padding-right: 20em; }
+#sidebar {
+  position: absolute; right: 0; top: 0; height: 100%; width: 20em;
+  border-left: 1px solid rgb(225, 225, 232); background-color: #f7f7f9;
+}

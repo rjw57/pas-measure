@@ -3,6 +3,7 @@
 var meas = imageMeasure('record-map');
 
 function entry() {
+  $('[data-action="add-scale"]').click(meas.addScale);
 
   // Wire up change and input events for database record modal
   $('#database-record-modal-url').on('change input', databaseRecordModalUpdate);
@@ -47,7 +48,29 @@ function ImageMeasure(elementId) {
 
   var image = null, imageLayer = null;
 
-  self.getImage = function() { return image; }
+  var draw = null;
+  var source = new ol.source.Vector();
+  var vector = new ol.layer.Vector({
+    source: source,
+    style: new ol.style.Style({
+      fill: new ol.style.Fill({
+        color: 'rgba(255, 255, 255, 0.2)'
+      }),
+      stroke: new ol.style.Stroke({
+        color: '#ffcc33',
+        width: 2
+      }),
+      image: new ol.style.Circle({
+        radius: 7,
+        fill: new ol.style.Fill({
+          color: '#ffcc33'
+        })
+      })
+    })
+  });
+  map.addLayer(vector);
+
+  self.getImage = function() { return image; };
 
   self.setImage = function(newImage) {
     if(imageLayer) { map.removeLayer(imageLayer); }
@@ -67,7 +90,36 @@ function ImageMeasure(elementId) {
     map.addLayer(imageLayer);
 
     map.getView().fit(extent, map.getSize());
-  }
+  };
+
+  self.addScale = function() {
+    if(draw) { return; }
+    draw = new ol.interaction.Draw({
+      source: source,
+      type: 'LineString',
+      minPoints: 2, maxPoints: 2,
+      style: new ol.style.Style({
+        fill: new ol.style.Fill({
+          color: 'rgba(255, 255, 255, 0.2)'
+        }),
+        stroke: new ol.style.Stroke({
+          color: 'rgba(0, 0, 0, 0.5)',
+          lineDash: [10, 10],
+          width: 2
+        }),
+        image: new ol.style.Circle({
+          radius: 5,
+          stroke: new ol.style.Stroke({
+            color: 'rgba(0, 0, 0, 0.7)'
+          }),
+          fill: new ol.style.Fill({
+            color: 'rgba(255, 255, 255, 0.2)'
+          })
+        })
+      })
+    });
+    map.addInteraction(draw);
+  };
 }
 
 function imageMeasure(elementId) { return new ImageMeasure(elementId); }

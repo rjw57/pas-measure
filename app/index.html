@@ -13,21 +13,34 @@
   </head>
 
   <body>
-    <nav class="navbar navbar-default navbar-fixed-top">
-      <div class="container">
-        <div class="navbar-header">
-          <span class="navbar-brand">PASMeasure</span>
-        </div>
-        <ul class="nav navbar-nav navbar-right">
-          <li><button data-action="select-record" class="btn btn-default navbar-btn">
-            Select record&hellip;
-          </button></li>
-        </ul>
-      </div>
-    </nav>
-
     <div id="main-content">
       <div id="record-map"></div>
+      <div id="sidebar">
+        <div class="container-fluid">
+          <p>Hello!</p>
+          <p>
+            <button data-action="select-record" class="btn btn-default">
+              Select record&hellip;
+            </button>
+          </p>
+
+          <button data-action="add-scale" class="btn btn-default">
+            Add scale
+          </button>
+
+          <button class="btn btn-default">
+            Add line measurement
+          </button>
+
+          <button class="btn btn-default">
+            Add polygon area measurement
+          </button>
+
+          <button class="btn btn-default">
+            Add circle measurement
+          </button>
+        </div>
+      </div>
       <!--
       <div id="no-record-banner" data-visible="no-record">
         <div class="container">
