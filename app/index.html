@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Image measurement</title>
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
+
+    <!-- Bootstrap -->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="style.css">
+  </head>
+
+  <body>
+    <nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <span class="navbar-brand">PASMeasure</span>
+        </div>
+        <ul class="nav navbar-nav navbar-right">
+          <li><button data-action="select-record" class="btn btn-default navbar-btn">
+            Select record&hellip;
+          </button></li>
+        </ul>
+      </div>
+    </nav>
+
+    <div id="main-content">
+      <div id="record-map"></div>
+      <!--
+      <div id="no-record-banner" data-visible="no-record">
+        <div class="container">
+          <div class="jumbotron">
+            <h1>Let's get measuring&hellip;</h1>
+            <p>
+            Select a record with an image from the PAS database to get started.
+            </p>
+            <p>
+            <button data-action="select-record" class="btn btn-primary btn-lg">
+              Select record
+            </button>
+            </p>
+          </div>
+        </div>
+      </div>
+      -->
+    </div>
+
+    <!-- Database entry modal -->
+    <div class="modal fade" id="database-record-modal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">
+              <span>&times;</span>
+            </button>
+            <h4 class="modal-title">Select database record</h4>
+          </div>
+          <div class="modal-body">
+            <p>
+            PAS Database records may be identified either by their URL (Uniform
+            Resource Locator) or their numeric ID. Generally it is easier to
+            cut-and-paste the URL to the record from your web-browser.
+            </p>
+            <form>
+              <div class="form-group">
+                <label for="database-record-modal-url" class="control-label">
+                  Record URL or ID
+                </label>
+                <input type="text" class="form-control"
+                  id="database-record-modal-url"
+                  placeholder="https://finds.org.uk/database/artefacts/record/id/764383">
+              </div>
+            </form>
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Record preview</h3>
+              </div>
+              <div class="panel-body">
+                <div id="database-record-modal-preview"></div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+              Close
+            </button>
+            <button type="button" class="btn btn-primary" id="database-record-modal-load">
+              Load
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script id="record-preview-template" type="text/x-handlebars-template">
+      <div class="record-preview">
+        {{#if error}}
+          <div class="alert alert-danger" role="alert">
+            <strong>Cannot load that record.</strong> The PAS database
+            responded with "{{error.status}}: {{error.statusText}}".
+          </div>
+        {{/if}}
+        {{#if record}}
+          <div class="record-preview-body">
+            {{#unless record.filename}}
+              <div class="alert alert-danger" role="alert">
+                <strong>This record has no image associated with
+                it.</strong> Records must have associated images.
+              </div>
+            {{/unless}}
+            <div class="media">
+              {{#if record.filename}}
+                <div class="media-left">
+                  <div class="record-preview-image media-object">
+                    <img class="img-responsive img-thumbnail"
+                         src="https://finds.org.uk/{{record.imagedir}}/{{record.filename}}">
+                  </div>
+                </div>
+              {{/if}}
+              <div class="media-body">
+                {{#if record.type }}
+                  <h4 class="media-heading">{{record.type}}</h4>
+                {{/if}}
+                {{!-- note: no HTML escaping! --}}
+                {{{ record.description }}}
+              </div>
+            </div>
+          </div>
+        {{else}}
+          {{#if isLoading}}
+            <p class="text-center"><img src="loading.gif"></p>
+          {{else}}
+            <p>Enter a database URL or ID to see a preview of the record.</p>
+          {{/if}}
+        {{/if}}
+      </div>
+    </script>
+
+    <!-- jQuery -->
+    <script src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
+
+    <!-- Handlebars.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.min.js"></script>
+
+    <!-- Leaflet -->
+    <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
+
+    <!-- Bootstrap -->
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+    <script src="app.js"></script>
+  </body>
+</html>
