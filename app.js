@@ -42,9 +42,33 @@ function ImageMeasure(elementId) {
     target: 'record-map',
     controls: [],
     view: new ol.View({
-      center: [0, 0], projection: projection, zoom: 1,
+      center: [0, 0], projection: projection, zoom: 0,
+      minZoom: -4,
     }),
   });
+
+  /*
+  var bgImage = document.createElement('img');
+  bgImage.onload = function() {
+  */
+  map.addLayer(new ol.layer.Image({
+    zIndex: -2000,
+    source: new ol.source.ImageCanvas({
+      canvasFunction: function(extent, resolution, pxRato, imSize, proj) {
+        var w = imSize[0], h = imSize[1];
+        var canvasElem = document.createElement('canvas');
+        canvasElem.width = w; canvasElem.height = h;
+        var ctx = canvasElem.getContext('2d');
+        ctx.fillStyle = '#888';
+        ctx.fillRect(0, 0, w, h);
+        return canvasElem;
+      },
+    }),
+  }));
+  /*
+  };
+  bgImage.src = 'map-bg.png';
+  */
 
   var image = null, imageLayer = null;
 
@@ -129,7 +153,7 @@ function ImageMeasure(elementId) {
         projection: projection,
         imageExtent: extent
       }),
-      zIndex: -100,
+      zIndex: 0,
     });
     map.addLayer(imageLayer);
 
@@ -141,6 +165,7 @@ function ImageMeasure(elementId) {
   var vector = new ol.layer.Vector({
     source: source,
     style: measurementStyleFunction,
+    zIndex: 100,
   });
   map.addLayer(vector);
 
