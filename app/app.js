@@ -51,10 +51,13 @@ function ImageMeasure(elementId) {
   function measurementStyleFunction(feature, resolution) {
     // resolution is "projection units per pixel"
     var perpPixLen = 20, perpLen = resolution * perpPixLen;
-    var strokeStyle = new ol.style.Stroke({ color: '#ffcc33', width: 2 });
+    var outerColor = 'rgba(51, 51, 51, 0.5)', innerColor = '#ffcc33';
+    var outerStrokeStyle = new ol.style.Stroke({ color: innerColor, width: 2 });
+    var innerStrokeStyle = new ol.style.Stroke({ color: outerColor, width: 4 });
 
     var styles = [
-      new ol.style.Style({ stroke: strokeStyle }),
+      new ol.style.Style({ stroke: outerStrokeStyle, zIndex: 100 }),
+      new ol.style.Style({ stroke: innerStrokeStyle, zIndex: 90 }),
     ];
 
     var geometry = feature.getGeometry();
@@ -62,34 +65,53 @@ function ImageMeasure(elementId) {
     if(geometry.getType() === 'LineString') {
       geometry.forEachSegment(function(start, end) {
         var dx = end[0] - start[0], dy = end[1] - start[1];
+        var sense = dx > 0 ? 1 : -1;
+
         var len = Math.sqrt(dx*dx + dy*dy);
         var perpDX = perpLen * -dy / len, perpDY = perpLen * dx / len;
-        styles.push(new ol.style.Style({
-          geometry: new ol.geom.MultiLineString([
-            [
-              [start[0] - perpDX, start[1] - perpDY],
-              [start[0] + perpDX, start[1] + perpDY],
-            ],
-            [
-              [end[0] - perpDX, end[1] - perpDY],
-              [end[0] + perpDX, end[1] + perpDY],
-            ],
-          ]),
-          stroke: strokeStyle,
-        }));
+
+        var perpGeom = new ol.geom.MultiLineString([
+          [
+            [start[0] - perpDX, start[1] - perpDY],
+            [start[0] + perpDX, start[1] + perpDY],
+          ],
+          [
+            [end[0] - perpDX, end[1] - perpDY],
+            [end[0] + perpDX, end[1] + perpDY],
+          ],
+        ]);
+
+        styles = styles.concat([
+          new ol.style.Style({
+            geometry: perpGeom,
+            stroke: innerStrokeStyle,
+            zIndex: 90,
+          }),
+          new ol.style.Style({
+            geometry: perpGeom,
+            stroke: outerStrokeStyle,
+            zIndex: 100,
+          }),
+          new ol.style.Style({
+            geometry: new ol.geom.Point([
+                0.5 * (end[0] + start[0]) + sense * 0.5 * perpDX,
+                0.5 * (end[1] + start[1]) + sense * 0.5 * perpDY,
+            ]),
+            text: new ol.style.Text({
+              text: '10mm',
+              rotation: Math.atan2(-sense * dy, Math.abs(dx)),
+              offsetX: 0, offsetY: 0,
+              font: '15px sans-serif',
+              fill: new ol.style.Fill({ color: innerColor }),
+              stroke: new ol.style.Stroke({ color: outerColor, width: 2 }),
+            }),
+          }),
+        ]);
       });
     }
 
     return styles;
   }
-
-  var draw = null;
-  var source = new ol.source.Vector();
-  var vector = new ol.layer.Vector({
-    source: source,
-    style: measurementStyleFunction,
-  });
-  map.addLayer(vector);
 
   self.getImage = function() { return image; };
 
@@ -114,38 +136,59 @@ function ImageMeasure(elementId) {
     map.getView().fit(extent, map.getSize());
   };
 
+  var draw = null;
+  var source = new ol.source.Vector();
+  var vector = new ol.layer.Vector({
+    source: source,
+    style: measurementStyleFunction,
+  });
+  map.addLayer(vector);
+
   self.addScale = function() {
     if(draw) { return; }
+
+    var pointerStyles = [
+      new ol.style.Style({
+        image: new ol.style.Circle({
+          radius: 10,
+          stroke: new ol.style.Stroke({
+            color: 'rgba(0, 0, 0, 0.7)'
+          }),
+          fill: new ol.style.Fill({
+            color: 'rgba(255, 255, 255, 0.2)'
+          })
+        }),
+        text: new ol.style.Text({
+          text: 'foo',
+        }),
+      }),
+    ];
 
     draw = new ol.interaction.Draw({
       source: source,
       type: 'LineString',
       minPoints: 2, maxPoints: 2,
       style: function(f, r) {
-        var styles = measurementStyleFunction(f, r);
-        styles.push(
-          new ol.style.Style({
-            image: new ol.style.Circle({
-              radius: 10,
-              stroke: new ol.style.Stroke({
-                color: 'rgba(0, 0, 0, 0.7)'
-              }),
-              fill: new ol.style.Fill({
-                color: 'rgba(255, 255, 255, 0.2)'
-              })
-            })
-          })
-        );
-        return styles;
+        var geometry = f.getGeometry();
+
+        if(geometry.getType() == 'LineString') {
+          return measurementStyleFunction(f, r);
+        }
+
+        if(geometry.getType() == 'Point') {
+          return pointerStyles;
+        }
+
+        return new ol.style.Style();
       },
     });
+
+    map.addInteraction(draw);
 
     draw.on('drawend', function() {
       map.removeInteraction(draw);
       draw = null;
     });
-
-    map.addInteraction(draw);
   };
 }
 
