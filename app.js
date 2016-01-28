@@ -118,6 +118,10 @@ function ImageMeasure(elementId) {
         })
       })
     });
+    draw.on('drawend', function() {
+      map.removeInteraction(draw);
+      draw = null;
+    });
     map.addInteraction(draw);
   };
 }
