@@ -2,6 +2,8 @@
 
 This is a work in progress.
 
+Install and compile via ``npm install && make``.
+
 ## Legal
 
 Except where listed below, this project is licensed under the MIT license. See
