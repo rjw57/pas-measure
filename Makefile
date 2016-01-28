@@ -10,7 +10,6 @@ ifeq ($(NPM),)
 $(error "npm not found on PATH. Specify NPM variable manually.")
 endif
 
-NODEMODULES:=node_modules
 NPMBIN=$(shell npm bin)
 WEBPACK=$(NPMBIN)/webpack
 
@@ -28,6 +27,6 @@ $(BUILDDIR)/%: $(SRCDIR)/% $(BUILDDIR)
 	cp "$<" "$@"
 
 clean:
-	rm -rf "$(BUILDDIR)" "$(NODEMODULES)"
+	rm -rf "$(BUILDDIR)"
 
 .PHONY: all copy pack clean
