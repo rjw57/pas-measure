@@ -48,25 +48,46 @@ function ImageMeasure(elementId) {
 
   var image = null, imageLayer = null;
 
+  function measurementStyleFunction(feature, resolution) {
+    // resolution is "projection units per pixel"
+    var perpPixLen = 20, perpLen = resolution * perpPixLen;
+    var strokeStyle = new ol.style.Stroke({ color: '#ffcc33', width: 2 });
+
+    var styles = [
+      new ol.style.Style({ stroke: strokeStyle }),
+    ];
+
+    var geometry = feature.getGeometry();
+
+    if(geometry.getType() === 'LineString') {
+      geometry.forEachSegment(function(start, end) {
+        var dx = end[0] - start[0], dy = end[1] - start[1];
+        var len = Math.sqrt(dx*dx + dy*dy);
+        var perpDX = perpLen * -dy / len, perpDY = perpLen * dx / len;
+        styles.push(new ol.style.Style({
+          geometry: new ol.geom.MultiLineString([
+            [
+              [start[0] - perpDX, start[1] - perpDY],
+              [start[0] + perpDX, start[1] + perpDY],
+            ],
+            [
+              [end[0] - perpDX, end[1] - perpDY],
+              [end[0] + perpDX, end[1] + perpDY],
+            ],
+          ]),
+          stroke: strokeStyle,
+        }));
+      });
+    }
+
+    return styles;
+  }
+
   var draw = null;
   var source = new ol.source.Vector();
   var vector = new ol.layer.Vector({
     source: source,
-    style: new ol.style.Style({
-      fill: new ol.style.Fill({
-        color: 'rgba(255, 255, 255, 0.2)'
-      }),
-      stroke: new ol.style.Stroke({
-        color: '#ffcc33',
-        width: 2
-      }),
-      image: new ol.style.Circle({
-        radius: 7,
-        fill: new ol.style.Fill({
-          color: '#ffcc33'
-        })
-      })
-    })
+    style: measurementStyleFunction,
   });
   map.addLayer(vector);
 
@@ -95,34 +116,35 @@ function ImageMeasure(elementId) {
 
   self.addScale = function() {
     if(draw) { return; }
+
     draw = new ol.interaction.Draw({
       source: source,
       type: 'LineString',
       minPoints: 2, maxPoints: 2,
-      style: new ol.style.Style({
-        fill: new ol.style.Fill({
-          color: 'rgba(255, 255, 255, 0.2)'
-        }),
-        stroke: new ol.style.Stroke({
-          color: 'rgba(0, 0, 0, 0.5)',
-          lineDash: [10, 10],
-          width: 2
-        }),
-        image: new ol.style.Circle({
-          radius: 5,
-          stroke: new ol.style.Stroke({
-            color: 'rgba(0, 0, 0, 0.7)'
-          }),
-          fill: new ol.style.Fill({
-            color: 'rgba(255, 255, 255, 0.2)'
+      style: function(f, r) {
+        var styles = measurementStyleFunction(f, r);
+        styles.push(
+          new ol.style.Style({
+            image: new ol.style.Circle({
+              radius: 10,
+              stroke: new ol.style.Stroke({
+                color: 'rgba(0, 0, 0, 0.7)'
+              }),
+              fill: new ol.style.Fill({
+                color: 'rgba(255, 255, 255, 0.2)'
+              })
+            })
           })
-        })
-      })
+        );
+        return styles;
+      },
     });
+
     draw.on('drawend', function() {
       map.removeInteraction(draw);
       draw = null;
     });
+
     map.addInteraction(draw);
   };
 }
