@@ -17,6 +17,24 @@
       <div id="record-map"></div>
       <div id="sidebar">
         <div class="container-fluid">
+          <h4>Current record</h4>
+
+          <p>TODO: info</p>
+
+          <p>
+            <button data-action="select-record" class="btn btn-default btn-block">
+              Select record&hellip;
+            </button>
+          </p>
+
+          <h4>Actions</h4>
+
+          <p>
+            <button class="btn btn-default btn-block">
+              Save Image&hellip;
+            </button>
+          </p>
+
           <h4>Options</h4>
 
           <p>
@@ -43,6 +61,11 @@
           </h4>
 
           <p>
+            Scales indicate known dimensions in an image. Adding more scales to
+            an image increases the accuracy of error estimates.
+          </p>
+
+          <p>
             <div class="input-group">
               <input type="text" class="form-control" placeholder="1234">
               <span class="input-group-addon">mm</span>
@@ -55,27 +78,29 @@
             </button>
           </p>
 
-          <p>
-            <button data-action="select-record" class="btn btn-default">
-              Select record&hellip;
-            </button>
-          </p>
+          <h4 class="clearfix">
+            Distance Measurements
+            <div class="color-swatch pull-right img-rounded"
+                 style="background-color: #3fc;"></div>
+          </h4>
 
-          <button data-action="add-scale" class="btn btn-default">
-            Add scale
-          </button>
+          <p>TODO</p>
 
-          <button class="btn btn-default">
-            Add line measurement
-          </button>
+          <h4 class="clearfix">
+            Circle Measurements
+            <div class="color-swatch pull-right img-rounded"
+                 style="background-color: #c3f;"></div>
+          </h4>
 
-          <button class="btn btn-default">
-            Add polygon area measurement
-          </button>
+          <p>TODO</p>
 
-          <button class="btn btn-default">
-            Add circle measurement
-          </button>
+          <h4 class="clearfix">
+            Area Measurements
+            <div class="color-swatch pull-right img-rounded"
+                 style="background-color: #333;"></div>
+          </h4>
+
+          <p>TODO</p>
         </div>
       </div>
       <!--
@@ -174,7 +199,9 @@
                   <h4 class="media-heading">{{record.type}}</h4>
                 {{/if}}
                 {{!-- note: no HTML escaping! --}}
-                {{{ record.description }}}
+                <div class="record-preview-description">
+                  {{{ record.description }}}
+                </div>
               </div>
             </div>
           </div>
