@@ -86,6 +86,7 @@ function ImageMeasure(elementId) {
         projection: projection,
         imageExtent: extent
       }),
+      zIndex: -100,
     });
     map.addLayer(imageLayer);
 
