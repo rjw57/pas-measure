@@ -17,7 +17,44 @@
       <div id="record-map"></div>
       <div id="sidebar">
         <div class="container-fluid">
-          <p>Hello!</p>
+          <h4>Options</h4>
+
+          <p>
+            <div class="form-horizontal">
+              <div class="form-group">
+                <label for="units" class="col-sm-3 control-label">Units</label>
+                <div class="col-sm-9">
+                  <select id="units" class="form-control">
+                    <option>millimetres</option>
+                    <option>centimetres</option>
+                    <option>metres</option>
+                    <option>inches</option>
+                    <option>feet</option>
+                    <option>yards</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </p>
+
+          <h4 class="clearfix">
+            Scales
+            <div class="color-swatch pull-right img-rounded"></div>
+          </h4>
+
+          <p>
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="1234">
+              <span class="input-group-addon">mm</span>
+            </div>
+          </p>
+          <p>
+            <button type="button" class="btn btn btn-block btn-default" data-action="add-scale">
+              <span class="glyphicon glyphicon-plus"></span>
+              Add scale
+            </button>
+          </p>
+
           <p>
             <button data-action="select-record" class="btn btn-default">
               Select record&hellip;
@@ -72,14 +109,14 @@
           </div>
           <div class="modal-body">
             <p>
-            PAS Database records may be identified either by their URL (Uniform
-            Resource Locator) or their numeric ID. Generally it is easier to
-            cut-and-paste the URL to the record from your web-browser.
+            PAS Database records are identified by their URL (Uniform
+            Resource Locator). Generally it is easiest to cut-and-paste the URL
+            of the record from your web-browser.
             </p>
             <form>
               <div class="form-group">
                 <label for="database-record-modal-url" class="control-label">
-                  Record URL or ID
+                  Record URL
                 </label>
                 <input type="text" class="form-control"
                   id="database-record-modal-url"
