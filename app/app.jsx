@@ -1,4 +1,6 @@
-(function(){
+var C = require('./components.jsx'),
+    React = require('react'),
+    ReactDOM = require('react-dom');
 
 var meas = imageMeasure('record-map');
 
@@ -222,10 +224,6 @@ function imageMeasure(elementId) { return new ImageMeasure(elementId); }
 // The current database record
 var currentRecord = null;
 
-// Compile the handlebars templates
-function compileTemplate(id) { return Handlebars.compile($('#' + id).html()); }
-var recordPreviewPanelTemplate = compileTemplate('record-preview-template');
-
 // Triggers a load of a new record from the passed URL/id
 function loadRecord(urlOrId) {
   var jsonUrl = getRecordJsonUrl(urlOrId);
@@ -319,12 +317,14 @@ function databaseRecordModalUpdate() {
 // Take a record object (or a falsy value) and update preview pane
 function setDatabaseRecordModalPreview(record, isLoading, error) {
   // Render template
-  $('#database-record-modal-preview').empty().
-      html(recordPreviewPanelTemplate({
-        record: record, isLoading: isLoading, error: error
-      }));
+  let props = { record, isLoading, error };
+  console.log(props);
+  ReactDOM.render(
+      <C.RecordPreview {...props} />,
+      $('#database-record-modal-preview').get(0)
+  );
 
-  $('#database-record-modal-load').prop('disabled', !record);
+  // $('#database-record-modal-load').prop('disabled', !record);
 }
 
 function showDatabaseRecordModal() {
@@ -339,5 +339,3 @@ function databaseRecordModalLoad() {
 }
 
 entry();
-
-})();
