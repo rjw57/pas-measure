@@ -2,17 +2,15 @@
 <html>
   <head>
     <title>Image measurement</title>
-    <!-- OpenLayers -->
+    <link rel="stylesheet"
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+    integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7"
+    crossorigin="anonymous">
     <link rel="stylesheet" href="ol.css" />
-
-    <!-- Bootstrap -->
-    <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-
-    <link rel="stylesheet" href="style.css">
   </head>
 
   <body>
+    <div id="app"></div>
     <div id="main-content">
       <div id="record-map"></div>
       <div id="sidebar">
@@ -32,13 +30,13 @@
           <p>
             <div class="checkbox">
               <label>
-                <input type="checkbox" value="">
+                <input type="checkbox" value="" />
                 Add digital scale
               </label>
             </div>
             <div class="checkbox">
               <label>
-                <input type="checkbox" value="">
+                <input type="checkbox" value="" />
                 Hide hand-labelled scales
               </label>
             </div>
@@ -72,7 +70,7 @@
 
           <p>
             <div class="input-group">
-              <input type="text" class="form-control" placeholder="1234">
+              <input type="text" class="form-control" placeholder="1234" />
               <span class="input-group-addon">mm</span>
             </div>
           </p>
@@ -108,23 +106,6 @@
           <p>TODO</p>
         </div>
       </div>
-      <!--
-      <div id="no-record-banner" data-visible="no-record">
-        <div class="container">
-          <div class="jumbotron">
-            <h1>Let's get measuring&hellip;</h1>
-            <p>
-            Select a record with an image from the PAS database to get started.
-            </p>
-            <p>
-            <button data-action="select-record" class="btn btn-primary btn-lg">
-              Select record
-            </button>
-            </p>
-          </div>
-        </div>
-      </div>
-      -->
     </div>
 
     <!-- Database entry modal -->
@@ -174,65 +155,13 @@
       </div>
     </div>
 
-    <script id="record-preview-template" type="text/x-handlebars-template">
-      <div class="record-preview">
-        {{#if error}}
-          <div class="alert alert-danger" role="alert">
-            <strong>Cannot load that record.</strong> The PAS database
-            responded with "{{error.status}}: {{error.statusText}}".
-          </div>
-        {{/if}}
-        {{#if record}}
-          <div class="record-preview-body">
-            {{#unless record.filename}}
-              <div class="alert alert-danger" role="alert">
-                <strong>This record has no image associated with
-                it.</strong> Records must have associated images.
-              </div>
-            {{/unless}}
-            <div class="media">
-              {{#if record.filename}}
-                <div class="media-left">
-                  <div class="record-preview-image media-object">
-                    <img class="img-responsive img-thumbnail"
-                         src="https://finds.org.uk/{{record.imagedir}}/{{record.filename}}">
-                  </div>
-                </div>
-              {{/if}}
-              <div class="media-body">
-                {{#if record.type }}
-                  <h4 class="media-heading">{{record.type}}</h4>
-                {{/if}}
-                {{!-- note: no HTML escaping! --}}
-                <div class="record-preview-description">
-                  {{{ record.description }}}
-                </div>
-              </div>
-            </div>
-          </div>
-        {{else}}
-          {{#if isLoading}}
-            <p class="text-center"><img src="loading.gif"></p>
-          {{else}}
-            <p>Enter a database URL or ID to see a preview of the record.</p>
-          {{/if}}
-        {{/if}}
-      </div>
-    </script>
-
-    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
-
-    <!-- Handlebars.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.min.js"></script>
-
-    <!-- OpenLayers -->
+    <script
+      src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+      integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS"
+      crossorigin="anonymous"></script>
     <script src="ol.js"></script>
 
-    <!-- Bootstrap -->
-    <!-- Latest compiled and minified JavaScript -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
-
-    <script src="app.js"></script>
+    <script src="bundle.js"></script>
   </body>
 </html>
