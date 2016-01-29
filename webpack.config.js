@@ -9,6 +9,7 @@ module.exports = {
   },
   externals: {
     'jquery': 'jQuery',
+    'openlayers': 'ol',
   },
   module: {
     loaders: [

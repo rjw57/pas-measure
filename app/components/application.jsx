@@ -32,15 +32,23 @@ export default connect(s=>s)(React.createClass({
   },
 
   render: function() {
-    const { dispatch, showSelectRecordModal } = this.props;
+    const {
+      dispatch, showSelectRecordModal, recordsById, selectedRecordId
+    } = this.props;
+
+    let currentRecord, currentRecordIsFetching;
+    if((selectedRecordId !== null) && (recordsById[selectedRecordId])) {
+      currentRecord = recordsById[selectedRecordId].record;
+      currentRecordIsFetching = recordsById[selectedRecordId].isFetching;
+    }
 
     return (
       <div className="application">
         <div className="image-editor">
-          <ImageEditor />
+          <ImageEditor record={currentRecord} />
         </div>
         <div className="sidebar">
-          <Sidebar />
+          <Sidebar record={currentRecord} />
         </div>
         <SelectRecordModal
           show={showSelectRecordModal} ref="selectRecordModal"
