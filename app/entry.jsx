@@ -27,5 +27,15 @@ render(
   document.getElementById('application-body')
 );
 
-import { requestSelectRecord } from './actions.js';
-store.dispatch(requestSelectRecord());
+import { requestSelectRecord, selectRecord } from './actions.js';
+let hashId = window.location.hash.substr(1);
+if(hashId !== '') {
+  store.dispatch(selectRecord(hashId));
+} else {
+  store.dispatch(requestSelectRecord());
+}
+
+store.subscribe(() => {
+  let state = store.getState();
+  if(state.selectedRecordId) { window.location.hash = state.selectedRecordId; }
+});

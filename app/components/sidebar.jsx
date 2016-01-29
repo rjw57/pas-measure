@@ -3,7 +3,7 @@ import { Button } from 'react-bootstrap';
 
 let SidebarSection = (props) => (
   <div className="sidebar-section">
-    <h4 className="sidebar-sectiont-title clearfix">
+    <h4 className="sidebar-section-title clearfix">
       {props.title}
     </h4>
     <div className="sidebar-section-body">
@@ -14,9 +14,6 @@ let SidebarSection = (props) => (
 
 export default (props) => {
   let ifRecord;
-  let { dispatch } = props;
-  console.log(dispatch);
-
   if(props.record) {
     ifRecord = (<div>
       <SidebarSection title="Current record">
