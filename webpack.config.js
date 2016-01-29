@@ -21,7 +21,8 @@ module.exports = {
     ]
   },
   watchOptions: {
-    poll: true,
+    aggregateTimeout: 300,
+    poll: 1000,
   },
   devtool: 'source-map',
 }

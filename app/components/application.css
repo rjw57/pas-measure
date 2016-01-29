@@ -1,0 +1,10 @@
+.application, .image-editor, .sidebar { position: absolute; }
+
+.application { left: 0; top: 0; bottom: 0; right: 0; }
+.image-editor { left: 0; top: 0; bottom: 0; right: 20em; }
+.sidebar { right: 0; top: 0; bottom: 0; width: 20em; overflow-y: auto; }
+
+.sidebar {
+  background-color: #f7f7f9;
+  border-left: 1px solid rgb(225, 225, 232);
+}

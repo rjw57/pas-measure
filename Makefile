@@ -15,6 +15,9 @@ WEBPACK=$(NPMBIN)/webpack
 
 all: copy pack
 
+watch: copy
+	"$(WEBPACK)" --watch
+
 copy: $(addprefix $(BUILDDIR)/,$(STATICFILES))
 
 pack:
@@ -29,4 +32,4 @@ $(BUILDDIR)/%: $(SRCDIR)/% $(BUILDDIR)
 clean:
 	rm -rf "$(BUILDDIR)"
 
-.PHONY: all copy pack clean
+.PHONY: all copy pack clean watch

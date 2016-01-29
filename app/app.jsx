@@ -1,5 +1,4 @@
-var C = require('./components.jsx'),
-    React = require('react'),
+var React = require('react'),
     ReactDOM = require('react-dom');
 
 var meas = imageMeasure('record-map');
@@ -24,11 +23,13 @@ function entry() {
   setCurrentRecord(null);
 
   // Is there a location hash?
+  /*
   if(window.location.hash) {
     loadRecord(window.location.hash.substr(1));
   } else {
     showDatabaseRecordModal();
   }
+  */
 }
 
 function ImageMeasure(elementId) {
@@ -316,15 +317,6 @@ function databaseRecordModalUpdate() {
 
 // Take a record object (or a falsy value) and update preview pane
 function setDatabaseRecordModalPreview(record, isLoading, error) {
-  // Render template
-  let props = { record, isLoading, error };
-  console.log(props);
-  ReactDOM.render(
-      <C.RecordPreview {...props} />,
-      $('#database-record-modal-preview').get(0)
-  );
-
-  // $('#database-record-modal-load').prop('disabled', !record);
 }
 
 function showDatabaseRecordModal() {
