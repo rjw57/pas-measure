@@ -10,7 +10,7 @@ import {
 
 require('style!css!./image-editor.css');
 
-function measurementStyleFunction(feature, resolution) {
+function measurementStyleFunction(feature, resolution, label) {
   // resolution is "projection units per pixel"
   var perpPixLen = 20, perpLen = resolution * perpPixLen;
   var outerColor = 'rgba(51, 51, 51, 0.5)', innerColor = '#ffcc33';
@@ -60,7 +60,7 @@ function measurementStyleFunction(feature, resolution) {
               0.5 * (end[1] + start[1]) + sense * 0.5 * perpDY,
           ]),
           text: new ol.style.Text({
-            text: '10mm',
+            text: label,
             rotation: Math.atan2(-sense * dy, Math.abs(dx)),
             offsetX: 0, offsetY: 0,
             font: '15px sans-serif',
@@ -232,11 +232,13 @@ class ImageEditor extends React.Component {
       // source: source,
       type: 'LineString',
       minPoints: 2, maxPoints: 2,
-      style: function(f, r) {
-        var geometry = f.getGeometry();
+      style: (f, r) => {
+        let geometry = f.getGeometry();
+        let label = worldLength / this.props.lengthUnit.length +
+          ' ' + this.props.lengthUnit.shortName;
 
         if(geometry.getType() == 'LineString') {
-          return measurementStyleFunction(f, r);
+          return measurementStyleFunction(f, r, label);
         }
 
         if(geometry.getType() == 'Point') {
@@ -250,11 +252,14 @@ class ImageEditor extends React.Component {
     let sketchFeature = null;
     this.draw.on('drawstart', (event) => {
       sketchFeature = event.feature;
+      /*
       sketchFeature.on('change', () => {
         this.props.dispatch(updatedDrawing({
-          type: SCALE, geometry: sketchFeature.getGeometry()
+          type: SCALE, geometry: sketchFeature.getGeometry(),
+          properties: { worldLength },
         }));
       });
+      */
     });
 
     this.draw.on('drawend', () => {
@@ -264,13 +269,14 @@ class ImageEditor extends React.Component {
       let geom;
       if(sketchFeature) { geom = sketchFeature.getGeometry(); }
       this.props.dispatch(finishedDrawing({
-        type: SCALE, geometry: sketchFeature.getGeometry()
+        type: SCALE, geometry: sketchFeature.getGeometry(),
+        properties: { worldLength },
       }));
     });
 
     this.map.addInteraction(this.draw);
     this.props.dispatch(startedDrawing({
-      type: SCALE, geometry: null
+      type: SCALE, geometry: null, properties: { worldLength },
     }));
   }
 }

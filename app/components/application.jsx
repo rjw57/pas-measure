@@ -11,7 +11,11 @@ import Sidebar from './sidebar.jsx'
 
 require('style!css!./application.css');
 
-export default connect(s=>s)(React.createClass({
+function filterState(state) {
+  return state;
+}
+
+export default connect(filterState)(React.createClass({
   handleSelectRecordModalSubmit: function() {
     this.props.dispatch(cancelSelectRecord());
     this.props.dispatch(selectRecord(
@@ -33,7 +37,8 @@ export default connect(s=>s)(React.createClass({
 
   render: function() {
     const {
-      dispatch, showSelectRecordModal, recordsById, selectedRecordId
+      dispatch, showSelectRecordModal, recordsById, selectedRecordId,
+      options
     } = this.props;
 
     let currentRecord, currentRecordIsFetching;
@@ -45,7 +50,7 @@ export default connect(s=>s)(React.createClass({
     return (
       <div className="application">
         <div className="application-image">
-          <ImageEditor record={currentRecord} />
+          <ImageEditor lengthUnit={options.lengthUnit} record={currentRecord} />
         </div>
         <div className="application-sidebar">
           <Sidebar record={currentRecord} />
