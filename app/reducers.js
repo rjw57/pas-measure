@@ -3,7 +3,7 @@ import {
   REQUEST_SELECT_RECORD, CANCEL_SELECT_RECORD,
   REQUEST_RECORD, RECEIVE_RECORD, SELECT_RECORD,
   START_DRAWING, STARTED_DRAWING, FINISHED_DRAWING,
-  UPDATED_DRAWING,
+  UPDATED_DRAWING, ADD_FEATURE,
 
   SCALE
 } from './actions.js';
@@ -88,15 +88,46 @@ function currentlyDrawing(state = initialCurrentlyDrawingState, action) {
   }
 }
 
-const editor = combineReducers({
-  currentlyDrawing
+// Features
+let nextFeatureId = 0;
+
+function scale(state, action) {
+  switch(action.type) {
+    case ADD_FEATURE:
+      if(action.feature.type === SCALE) {
+        let { geometry, properties } = action.feature;
+        return { id: ++nextFeatureId, geometry, properties };
+      } else {
+        return state;
+      }
+    default:
+      return state;
+  }
+}
+
+function scales(state = [], action) {
+  switch(action.type) {
+    case ADD_FEATURE:
+      if(action.feature.type === SCALE) {
+        return [...state, scale(undefined, action)];
+      } else {
+        return state;
+      }
+    default:
+      return state;
+  }
+}
+
+const features = combineReducers({
+  scales,
 });
 
 const app = combineReducers({
   selectedRecordId,
   recordsById,
   showSelectRecordModal,
-  editor,
+  currentlyDrawing,
+  features,
 });
 
 export default app;

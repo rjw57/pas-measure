@@ -76,8 +76,8 @@ function measurementStyleFunction(feature, resolution) {
 }
 
 function filterState(state) {
-  let { editor } = state;
-  return { editor };
+  let { currentlyDrawing, features } = state;
+  return { currentlyDrawing, features };
 }
 
 class ImageEditor extends React.Component {
@@ -166,14 +166,13 @@ class ImageEditor extends React.Component {
     }
 
     // Drawing
-    let nextEditor = nextProps.editor, editor = this.props.editor;
-    if(nextEditor.currentlyDrawing.type !== editor.currentlyDrawing.type) {
+    if(nextProps.currentlyDrawing.type !== this.props.currentlyDrawing.type) {
       // We've changed what we're drawing so come what may, we need to
       // remove any current drawing.
       this.removeCurrentDrawing();
 
       // What are we drawing?
-      switch(nextEditor.currentlyDrawing.type) {
+      switch(nextProps.currentlyDrawing.type) {
         case SCALE:
           this.startDrawingScale();
           break;

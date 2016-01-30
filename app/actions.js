@@ -57,10 +57,14 @@ export function fetchRecordIfNeeded(id) {
 // Things one may draw
 export const SCALE = 'SCALE';
 
-// A drawing has a type and a geometry in pixels
-let nextDrawingId = 0;
-function createDrawing(type, geometry = null) {
-  return { id: ++nextDrawingId, type, geometry };
+export const ADD_FEATURE = 'ADD_FEATURE';
+
+let nextFeatureId = 0;
+export function addFeature(type, geometry, properties = {}) {
+  return {
+    type: ADD_FEATURE,
+    feature: { id: ++nextFeatureId, type, geometry, properties }
+  };
 }
 
 export const START_DRAWING = 'START_DRAWING';
