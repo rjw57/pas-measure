@@ -167,13 +167,13 @@ class ImageEditor extends React.Component {
 
     // Drawing
     let nextEditor = nextProps.editor, editor = this.props.editor;
-    if(nextEditor.shouldBeDrawingType !== editor.shouldBeDrawingType) {
+    if(nextEditor.currentlyDrawing.type !== editor.currentlyDrawing.type) {
       // We've changed what we're drawing so come what may, we need to
       // remove any current drawing.
       this.removeCurrentDrawing();
 
       // What are we drawing?
-      switch(nextEditor.shouldBeDrawingType) {
+      switch(nextEditor.currentlyDrawing.type) {
         case SCALE:
           this.startDrawingScale();
           break;
@@ -248,9 +248,9 @@ class ImageEditor extends React.Component {
     this.draw.on('drawstart', (event) => {
       sketchFeature = event.feature;
       sketchFeature.on('change', () => {
-        this.props.dispatch(updatedDrawing(
-          SCALE, sketchFeature.getGeometry()
-        ));
+        this.props.dispatch(updatedDrawing({
+          type: SCALE, geometry: sketchFeature.getGeometry()
+        }));
       });
     });
 
@@ -260,11 +260,15 @@ class ImageEditor extends React.Component {
       this.draw = null;
       let geom;
       if(sketchFeature) { geom = sketchFeature.getGeometry(); }
-      this.props.dispatch(finishedDrawing(SCALE, geom));
+      this.props.dispatch(finishedDrawing({
+        type: SCALE, geometry: sketchFeature.getGeometry()
+      }));
     });
 
     this.map.addInteraction(this.draw);
-    this.props.dispatch(startedDrawing(SCALE));
+    this.props.dispatch(startedDrawing({
+      type: SCALE, geometry: null
+    }));
   }
 }
 

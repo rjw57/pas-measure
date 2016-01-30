@@ -3,7 +3,9 @@ import {
   REQUEST_SELECT_RECORD, CANCEL_SELECT_RECORD,
   REQUEST_RECORD, RECEIVE_RECORD, SELECT_RECORD,
   START_DRAWING, STARTED_DRAWING, FINISHED_DRAWING,
-  UPDATED_DRAWING
+  UPDATED_DRAWING,
+
+  SCALE
 } from './actions.js';
 
 function selectedRecordId(state = null, action) {
@@ -58,36 +60,37 @@ function showSelectRecordModal(state = false, action) {
   }
 }
 
-// The initial editor state
-const initialEditorState = {
-  shouldBeDrawingType: null,
-  currentlyDrawing: null,
-  currentGeometry: null,
+/* The editor state consists of what type of object is currently being drawn (or
+ * null if there is no current drawing) and a collection of objects. Each object
+ * has a geometry property which is an ol.Geometry instance describing the
+ * geometry of the drawn object. Each object also has a unique id accessible
+ * through the id property.
+ */
+
+const initialCurrentlyDrawingState = {
+  type: null,
+  geometry: null,
 };
 
-function editor(state = initialEditorState, action) {
+function currentlyDrawing(state = initialCurrentlyDrawingState, action) {
   switch(action.type) {
     case START_DRAWING:
       return Object.assign({}, state, {
-        shouldBeDrawingType: action.drawingType
+        type: action.drawingType, geometry: null
       });
     case STARTED_DRAWING:
-      return Object.assign({}, state, {
-        currentlyDrawing: action.drawing,
-      });
     case UPDATED_DRAWING:
-      return Object.assign({}, state, {
-        currentlyDrawing: action.drawing,
-      });
+      return Object.assign({}, state, action.drawing);
     case FINISHED_DRAWING:
-      return Object.assign({}, state, {
-        shouldBeDrawingType: null,
-        currentlyDrawing: null
-      });
+      return Object.assign({}, state, { type: null, geometry: null });
     default:
       return state;
   }
 }
+
+const editor = combineReducers({
+  currentlyDrawing
+});
 
 const app = combineReducers({
   selectedRecordId,
