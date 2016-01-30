@@ -1,9 +1,84 @@
 import React from 'react';
+import { connect } from 'react-redux'
 import ol from 'openlayers';
 
 import { imageUrlFromRecord } from '../pas-api.js';
 
+import {
+  SCALE, startedDrawing, finishedDrawing, updatedDrawing
+} from '../actions.js';
+
 require('style!css!./image-editor.css');
+
+function measurementStyleFunction(feature, resolution) {
+  // resolution is "projection units per pixel"
+  var perpPixLen = 20, perpLen = resolution * perpPixLen;
+  var outerColor = 'rgba(51, 51, 51, 0.5)', innerColor = '#ffcc33';
+  var outerStrokeStyle = new ol.style.Stroke({ color: innerColor, width: 2 });
+  var innerStrokeStyle = new ol.style.Stroke({ color: outerColor, width: 4 });
+
+  var styles = [
+    new ol.style.Style({ stroke: outerStrokeStyle, zIndex: 100 }),
+    new ol.style.Style({ stroke: innerStrokeStyle, zIndex: 90 }),
+  ];
+
+  var geometry = feature.getGeometry();
+
+  if(geometry.getType() === 'LineString') {
+    geometry.forEachSegment(function(start, end) {
+      var dx = end[0] - start[0], dy = end[1] - start[1];
+      var sense = dx > 0 ? 1 : -1;
+
+      var len = Math.sqrt(dx*dx + dy*dy);
+      var perpDX = perpLen * -dy / len, perpDY = perpLen * dx / len;
+
+      var perpGeom = new ol.geom.MultiLineString([
+        [
+          [start[0] - perpDX, start[1] - perpDY],
+          [start[0] + perpDX, start[1] + perpDY],
+        ],
+        [
+          [end[0] - perpDX, end[1] - perpDY],
+          [end[0] + perpDX, end[1] + perpDY],
+        ],
+      ]);
+
+      styles = styles.concat([
+        new ol.style.Style({
+          geometry: perpGeom,
+          stroke: innerStrokeStyle,
+          zIndex: 90,
+        }),
+        new ol.style.Style({
+          geometry: perpGeom,
+          stroke: outerStrokeStyle,
+          zIndex: 100,
+        }),
+        new ol.style.Style({
+          geometry: new ol.geom.Point([
+              0.5 * (end[0] + start[0]) + sense * 0.5 * perpDX,
+              0.5 * (end[1] + start[1]) + sense * 0.5 * perpDY,
+          ]),
+          text: new ol.style.Text({
+            text: '10mm',
+            rotation: Math.atan2(-sense * dy, Math.abs(dx)),
+            offsetX: 0, offsetY: 0,
+            font: '15px sans-serif',
+            fill: new ol.style.Fill({ color: innerColor }),
+            stroke: new ol.style.Stroke({ color: outerColor, width: 2 }),
+          }),
+        }),
+      ]);
+    });
+  }
+
+  return styles;
+}
+
+function filterState(state) {
+  let { editor } = state;
+  return { editor };
+}
 
 class ImageEditor extends React.Component {
   constructor(props) {
@@ -34,6 +109,9 @@ class ImageEditor extends React.Component {
         },
       }),
     });
+
+    // The current draw interaction
+    this.draw = null;
 
     // URL to current image
     this.imageUrl = null;
@@ -86,6 +164,21 @@ class ImageEditor extends React.Component {
         this.setImageUrl(nextImageUrl);
       }
     }
+
+    // Drawing
+    let nextEditor = nextProps.editor, editor = this.props.editor;
+    if(nextEditor.shouldBeDrawingType !== editor.shouldBeDrawingType) {
+      // We've changed what we're drawing so come what may, we need to
+      // remove any current drawing.
+      this.removeCurrentDrawing();
+
+      // What are we drawing?
+      switch(nextEditor.shouldBeDrawingType) {
+        case SCALE:
+          this.startDrawingScale();
+          break;
+      }
+    }
   }
 
   // Set a new image URL
@@ -101,6 +194,80 @@ class ImageEditor extends React.Component {
       <div className="image-editor-map" ref="map" />
     );
   }
+
+  removeCurrentDrawing() {
+    if(this.draw && this.map) {
+      this.map.removeInteraction(this.draw);
+      this.draw = null;
+    }
+  }
+
+  startDrawingScale() {
+    // NOP if there's no map
+    if(!this.map) { return; }
+    this.removeCurrentDrawing();
+
+    let pointerStyles = [
+      new ol.style.Style({
+        image: new ol.style.Circle({
+          radius: 10,
+          stroke: new ol.style.Stroke({
+            color: 'rgba(0, 0, 0, 0.7)'
+          }),
+          fill: new ol.style.Fill({
+            color: 'rgba(255, 255, 255, 0.2)'
+          })
+        }),
+        text: new ol.style.Text({
+          text: 'foo',
+        }),
+      }),
+    ];
+
+    // Create a new drawing
+    this.draw = new ol.interaction.Draw({
+      // source: source,
+      type: 'LineString',
+      minPoints: 2, maxPoints: 2,
+      style: function(f, r) {
+        var geometry = f.getGeometry();
+
+        if(geometry.getType() == 'LineString') {
+          return measurementStyleFunction(f, r);
+        }
+
+        if(geometry.getType() == 'Point') {
+          return pointerStyles;
+        }
+
+        return new ol.style.Style();
+      },
+    });
+
+    let sketchFeature = null;
+    this.draw.on('drawstart', (event) => {
+      sketchFeature = event.feature;
+      sketchFeature.on('change', () => {
+        this.props.dispatch(updatedDrawing(
+          SCALE, sketchFeature.getGeometry()
+        ));
+      });
+    });
+
+    this.draw.on('drawend', () => {
+      if(!this.map) { return; }
+      this.map.removeInteraction(this.draw);
+      this.draw = null;
+      let geom;
+      if(sketchFeature) { geom = sketchFeature.getGeometry(); }
+      this.props.dispatch(finishedDrawing(SCALE, geom));
+    });
+
+    this.map.addInteraction(this.draw);
+    this.props.dispatch(startedDrawing(SCALE));
+  }
 }
+
+ImageEditor = connect(filterState)(ImageEditor);
 
 export default ImageEditor;

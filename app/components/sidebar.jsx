@@ -1,5 +1,9 @@
 import React from 'react';
 import { Button } from 'react-bootstrap';
+import { connect } from 'react-redux'
+
+import { startDrawing, SCALE } from '../actions.js';
+import ScaleList from './scale-list.jsx';
 
 let SidebarSection = (props) => (
   <div className="sidebar-section">
@@ -12,15 +16,21 @@ let SidebarSection = (props) => (
   </div>
 );
 
-export default (props) => {
+export default connect(() => ({}))((props) => {
   let ifRecord;
+  let scales = [
+    { length: 45 }, { length: 56 }
+  ];
   if(props.record) {
     ifRecord = (<div>
       <SidebarSection title="Current record">
         { props.record.id }
       </SidebarSection>
       <SidebarSection title="Scales">
-        <Button block>Add scale</Button>
+        <ScaleList scales={scales} />
+        <Button block onClick={() => props.dispatch(startDrawing(SCALE))}>
+          Add scale
+        </Button>
       </SidebarSection>
     </div>);
   }
@@ -30,4 +40,4 @@ export default (props) => {
     { ifRecord }
     </div>
   );
-};
+});
