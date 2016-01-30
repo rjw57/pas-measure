@@ -7,7 +7,8 @@ import { imageUrlFromRecord } from '../pas-api.js';
 import { formatLength } from '../utils.js';
 
 import {
-  SCALE, startedDrawing, finishedDrawing, updatedDrawing
+  startedDrawing, finishedDrawing, updatedDrawing,
+  SCALE, addScale
 } from '../actions.js';
 
 require('style!css!./image-editor.css');
@@ -210,8 +211,6 @@ class ImageEditor extends React.Component {
     if(!this.map) { return; }
     this.removeCurrentDrawing();
 
-    console.log('XXX', worldLength);
-
     let pointerStyles = [
       new ol.style.Style({
         image: new ol.style.Circle({
@@ -271,9 +270,13 @@ class ImageEditor extends React.Component {
       let geom;
       if(sketchFeature) { geom = sketchFeature.getGeometry(); }
       this.props.dispatch(finishedDrawing({
-        type: SCALE, geometry: sketchFeature.getGeometry(),
-        properties: { worldLength },
+        type: SCALE, geometry: geom, properties: { worldLength },
       }));
+
+      if(geom) {
+        let coords = geom.getCoordinates();
+        this.props.dispatch(addScale(coords[0], coords[1], worldLength));
+      }
     });
 
     this.map.addInteraction(this.draw);

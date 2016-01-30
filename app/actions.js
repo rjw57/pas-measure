@@ -57,16 +57,6 @@ export function fetchRecordIfNeeded(id) {
 // Things one may draw
 export const SCALE = 'SCALE';
 
-export const ADD_FEATURE = 'ADD_FEATURE';
-
-let nextFeatureId = 0;
-export function addFeature(type, geometry, properties = {}) {
-  return {
-    type: ADD_FEATURE,
-    feature: { id: ++nextFeatureId, type, geometry, properties }
-  };
-}
-
 export const START_DRAWING = 'START_DRAWING';
 export const STARTED_DRAWING = 'STARTED_DRAWING';
 export const UPDATED_DRAWING = 'UPDATED_DRAWING';
@@ -100,3 +90,11 @@ export const SET_LENGTH_UNIT = 'SET_LENGTH_UNIT';
 export function setLengthUnit(unit) {
   return { type: SET_LENGTH_UNIT, unit };
 }
+
+export const ADD_SCALE = 'ADD_SCALE';
+export function addScale(startPoint, endPoint, length) {
+  return {
+    type: ADD_SCALE, startPoint, endPoint, length
+  };
+}
+

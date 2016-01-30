@@ -3,7 +3,9 @@ import {
   REQUEST_SELECT_RECORD, CANCEL_SELECT_RECORD,
   REQUEST_RECORD, RECEIVE_RECORD, SELECT_RECORD,
   START_DRAWING, STARTED_DRAWING, FINISHED_DRAWING,
-  UPDATED_DRAWING, ADD_FEATURE, SET_LENGTH_UNIT,
+  UPDATED_DRAWING, SET_LENGTH_UNIT,
+
+  ADD_SCALE,
 
   SCALE, LENGTH_UNITS
 } from './actions.js';
@@ -88,18 +90,13 @@ function currentlyDrawing(state = initialCurrentlyDrawingState, action) {
   }
 }
 
-// Features
-let nextFeatureId = 0;
-
+// Scales
+let nextScaleId = 1;
 function scale(state, action) {
   switch(action.type) {
-    case ADD_FEATURE:
-      if(action.feature.type === SCALE) {
-        let { geometry, properties } = action.feature;
-        return { id: ++nextFeatureId, geometry, properties };
-      } else {
-        return state;
-      }
+    case ADD_SCALE:
+      let { startPoint, endPoint, length } = action;
+      return { id: nextScaleId++, startPoint, endPoint, length };
     default:
       return state;
   }
@@ -107,12 +104,8 @@ function scale(state, action) {
 
 function scales(state = [], action) {
   switch(action.type) {
-    case ADD_FEATURE:
-      if(action.feature.type === SCALE) {
-        return [...state, scale(undefined, action)];
-      } else {
-        return state;
-      }
+    case ADD_SCALE:
+      return [...state, scale(undefined, action)];
     default:
       return state;
   }
