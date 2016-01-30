@@ -96,23 +96,25 @@ function scale(state, action) {
   switch(action.type) {
     case ADD_SCALE:
       let { startPoint, endPoint, length } = action;
-      return { id: nextScaleId++, startPoint, endPoint, length };
+      return { startPoint, endPoint, length };
     default:
       return state;
   }
 }
 
-function scales(state = [], action) {
+function scalesById(state = [], action) {
   switch(action.type) {
     case ADD_SCALE:
-      return [...state, scale(undefined, action)];
+      let newScale = { };
+      newScale[nextScaleId++] = scale(undefined, action);
+      return Object.assign({}, state, newScale);
     default:
       return state;
   }
 }
 
 const features = combineReducers({
-  scales,
+  scalesById,
 });
 
 function lengthUnit(state = LENGTH_UNITS[0], action) {

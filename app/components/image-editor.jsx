@@ -113,6 +113,12 @@ class ImageEditor extends React.Component {
       }),
     });
 
+    // Scales
+    this.scaleSource = new ol.source.Vector();
+    this.scaleLayer = new ol.layer.Vector({
+      source: this.scaleSource, zIndex: 100,
+    });
+
     // The current draw interaction
     this.draw = null;
 
@@ -149,7 +155,7 @@ class ImageEditor extends React.Component {
       target: this.refs.map,
       controls: [],
       view: this.view,
-      layers: [ this.bgLayer, this.imageLayer ],
+      layers: [ this.bgLayer, this.imageLayer, this.scaleLayer ],
     });
   }
 
