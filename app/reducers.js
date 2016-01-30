@@ -3,9 +3,9 @@ import {
   REQUEST_SELECT_RECORD, CANCEL_SELECT_RECORD,
   REQUEST_RECORD, RECEIVE_RECORD, SELECT_RECORD,
   START_DRAWING, STARTED_DRAWING, FINISHED_DRAWING,
-  UPDATED_DRAWING, ADD_FEATURE,
+  UPDATED_DRAWING, ADD_FEATURE, SET_LENGTH_UNIT,
 
-  SCALE
+  SCALE, LENGTH_UNITS
 } from './actions.js';
 
 function selectedRecordId(state = null, action) {
@@ -76,7 +76,7 @@ function currentlyDrawing(state = initialCurrentlyDrawingState, action) {
   switch(action.type) {
     case START_DRAWING:
       return Object.assign({}, state, {
-        type: action.drawingType, geometry: null
+        type: action.drawingType, properties: action.properties, geometry: null
       });
     case STARTED_DRAWING:
     case UPDATED_DRAWING:
@@ -122,12 +122,26 @@ const features = combineReducers({
   scales,
 });
 
+function lengthUnit(state = LENGTH_UNITS[0], action) {
+  switch(action.type) {
+    case SET_LENGTH_UNIT:
+      return action.unit;
+    default:
+      return state;
+  }
+}
+
+const options = combineReducers({
+  lengthUnit,
+});
+
 const app = combineReducers({
   selectedRecordId,
   recordsById,
   showSelectRecordModal,
   currentlyDrawing,
   features,
+  options,
 });
 
 export default app;

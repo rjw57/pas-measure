@@ -44,10 +44,10 @@ export default connect(s=>s)(React.createClass({
 
     return (
       <div className="application">
-        <div className="image-editor">
+        <div className="application-image">
           <ImageEditor record={currentRecord} />
         </div>
-        <div className="sidebar">
+        <div className="application-sidebar">
           <Sidebar record={currentRecord} />
         </div>
         <SelectRecordModal

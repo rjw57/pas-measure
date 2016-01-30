@@ -171,10 +171,12 @@ class ImageEditor extends React.Component {
       // remove any current drawing.
       this.removeCurrentDrawing();
 
+      let drawProps = nextProps.currentlyDrawing.properties;
+
       // What are we drawing?
       switch(nextProps.currentlyDrawing.type) {
         case SCALE:
-          this.startDrawingScale();
+          this.startDrawingScale(drawProps.worldLength);
           break;
       }
     }
@@ -201,10 +203,12 @@ class ImageEditor extends React.Component {
     }
   }
 
-  startDrawingScale() {
+  startDrawingScale(worldLength) {
     // NOP if there's no map
     if(!this.map) { return; }
     this.removeCurrentDrawing();
+
+    console.log('XXX', worldLength);
 
     let pointerStyles = [
       new ol.style.Style({

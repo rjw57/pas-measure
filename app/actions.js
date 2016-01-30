@@ -72,8 +72,8 @@ export const STARTED_DRAWING = 'STARTED_DRAWING';
 export const UPDATED_DRAWING = 'UPDATED_DRAWING';
 export const FINISHED_DRAWING = 'FINISHED_DRAWING';
 
-export function startDrawing(type) {
-  return { type: START_DRAWING, drawingType: type };
+export function startDrawing(type, properties) {
+  return { type: START_DRAWING, drawingType: type, properties };
 }
 
 export function startedDrawing(drawing) {
@@ -88,3 +88,15 @@ export function finishedDrawing(drawing) {
   return { type: FINISHED_DRAWING, drawing };
 }
 
+// Length units which are supported. Each unit has a short name, id
+// and a length in metres.
+export const LENGTH_UNITS = [
+  { id: 'mm', shortName: 'mm', length: 1e-3 },
+  { id: 'cm', shortName: 'cm', length: 1e-2 },
+  { id: 'in', shortName: 'in', length: 2.54e-2 },
+];
+
+export const SET_LENGTH_UNIT = 'SET_LENGTH_UNIT';
+export function setLengthUnit(unit) {
+  return { type: SET_LENGTH_UNIT, unit };
+}
