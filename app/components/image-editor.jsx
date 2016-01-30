@@ -4,6 +4,8 @@ import ol from 'openlayers';
 
 import { imageUrlFromRecord } from '../pas-api.js';
 
+import { formatLength } from '../utils.js';
+
 import {
   SCALE, startedDrawing, finishedDrawing, updatedDrawing
 } from '../actions.js';
@@ -234,7 +236,7 @@ class ImageEditor extends React.Component {
       minPoints: 2, maxPoints: 2,
       style: (f, r) => {
         let geometry = f.getGeometry();
-        let label = worldLength / this.props.lengthUnit.length +
+        let label = formatLength(worldLength, this.props.lengthUnit) +
           ' ' + this.props.lengthUnit.shortName;
 
         if(geometry.getType() == 'LineString') {

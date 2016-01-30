@@ -4,6 +4,8 @@ import { connect } from 'react-redux'
 
 import { startDrawing, SCALE, setLengthUnit } from '../actions.js';
 
+import { formatLength } from '../utils.js';
+
 import ScaleList from './scale-list.jsx';
 import Options from './options.jsx';
 
@@ -35,8 +37,7 @@ class LengthInput extends React.Component {
       if(this.state.inputValue) {
         let val = parseFloat(this.state.inputValue);
         val *= this.props.unit.length;
-        val /= nextProps.unit.length;
-        this.setState({ inputValue: '' + val });
+        this.setState({ inputValue: formatLength(val, nextProps.unit) });
       }
     }
   }
