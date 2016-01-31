@@ -204,19 +204,22 @@ class ImageEditor extends React.Component {
       [...scaleIds].filter(id => !nextScaleIds.has(id)));
 
     // Remove any scales we need to
-    removedScaleIds.forEach(id =>
-      this.scaleSource.removeFeature(this.scaleSource.getFetureById(id)));
+    console.log('remove', removedScaleIds);
+    console.log('insert', insertedScaleIds);
+
+    removedScaleIds.forEach(id => {
+      let f = this.scaleSource.getFeatureById(id);
+      if(f) { this.scaleSource.removeFeature(f); }
+    });
 
     // Now insert any new scales
     if(insertedScaleIds.size > 0) {
       nextProps.features.scales.forEach(s => {
-        console.log('considering', s);
         if(!insertedScaleIds.has(s.id)) { return; }
-        console.log('inserting', s);
         let geometry = new ol.geom.LineString([s.startPoint, s.endPoint]);
-        this.scaleSource.addFeature(new ol.Feature({
-          id: s.id, length: s.length, geometry
-        }));
+        let f = new ol.Feature({ length: s.length, geometry });
+        f.setId(s.id);
+        this.scaleSource.addFeature(f);
       });
     }
   }

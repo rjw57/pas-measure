@@ -92,9 +92,14 @@ export function setLengthUnit(unit) {
 }
 
 export const ADD_SCALE = 'ADD_SCALE';
+export const REMOVE_SCALE = 'REMOVE_SCALE';
+
 export function addScale(startPoint, endPoint, length) {
   return {
     type: ADD_SCALE, startPoint, endPoint, length
   };
 }
 
+export function removeScale(scaleId) {
+  return { type: REMOVE_SCALE, id: scaleId };
+}

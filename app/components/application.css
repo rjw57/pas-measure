@@ -7,7 +7,6 @@
 .application-sidebar { right: 0; width: 20em; }
 
 .application-sidebar {
-  background-color: #f7f7f9;
   border-left: 1px solid rgb(225, 225, 232);
   overflow-y: auto;
 }

@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, Input } from 'react-bootstrap';
 import { connect } from 'react-redux'
 
-import { startDrawing, SCALE, setLengthUnit } from '../actions.js';
+import { startDrawing, SCALE, setLengthUnit, removeScale } from '../actions.js';
 
 import { formatLength } from '../utils.js';
 
@@ -21,8 +21,8 @@ let SidebarSection = (props) => (
 );
 
 function filterState(state) {
-  let { options } = state;
-  return { options };
+  let { options, features } = state;
+  return { options, features };
 }
 
 class LengthInput extends React.Component {
@@ -71,14 +71,17 @@ class Sidebar extends React.Component {
   }
 
   handleAddScaleClick() {
-    console.log('length: ', this.state.scaleLength);
     this.props.dispatch(startDrawing(SCALE, {
       worldLength: this.state.scaleLength
     }));
   }
 
+  handleDeleteScale(scaleId) {
+    this.props.dispatch(removeScale(scaleId));
+  }
+
   render() {
-    let { dispatch, options } = this.props;
+    let { dispatch, options, features } = this.props;
     let addScaleDisabled = !this.props.record ||
       (this.state.scaleLength === null);
     return (
@@ -90,6 +93,12 @@ class Sidebar extends React.Component {
           />
         </SidebarSection>
         <SidebarSection title="Scales">
+          {
+            features.scales.length > 0 ?
+              <ScaleList scales={features.scales} unit={options.lengthUnit}
+                         onDelete={s => this.handleDeleteScale(s)} />
+              : null
+          }
           <LengthInput unit={options.lengthUnit}
                        onInput={l => this.setState({ scaleLength: l })}/>
           <Button block disabled={addScaleDisabled}

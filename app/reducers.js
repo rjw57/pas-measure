@@ -5,7 +5,7 @@ import {
   START_DRAWING, STARTED_DRAWING, FINISHED_DRAWING,
   UPDATED_DRAWING, SET_LENGTH_UNIT,
 
-  ADD_SCALE,
+  ADD_SCALE, REMOVE_SCALE,
 
   SCALE, LENGTH_UNITS
 } from './actions.js';
@@ -106,6 +106,8 @@ function scales(state = [], action) {
   switch(action.type) {
     case ADD_SCALE:
       return [...state, scale(undefined, action)];
+    case REMOVE_SCALE:
+      return state.filter(s => s.id !== action.id);
     default:
       return state;
   }
