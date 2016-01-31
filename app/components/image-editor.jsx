@@ -5,6 +5,7 @@ import ol from 'openlayers';
 import { imageUrlFromRecord } from '../pas-api.js';
 
 import { formatLength } from '../utils.js';
+import { linearMeasurementStyle } from '../map-utils.js';
 
 import {
   startedDrawing, finishedDrawing, updatedDrawing,
@@ -12,71 +13,6 @@ import {
 } from '../actions.js';
 
 require('style!css!./image-editor.css');
-
-function measurementStyleFunction(feature, resolution) {
-  // resolution is "projection units per pixel"
-  var perpPixLen = 20, perpLen = resolution * perpPixLen;
-  var outerColor = 'rgba(51, 51, 51, 0.5)', innerColor = '#ffcc33';
-  var outerStrokeStyle = new ol.style.Stroke({ color: innerColor, width: 2 });
-  var innerStrokeStyle = new ol.style.Stroke({ color: outerColor, width: 4 });
-
-  var styles = [
-    new ol.style.Style({ stroke: outerStrokeStyle, zIndex: 100 }),
-    new ol.style.Style({ stroke: innerStrokeStyle, zIndex: 90 }),
-  ];
-
-  var geometry = feature.getGeometry();
-
-  if(geometry.getType() === 'LineString') {
-    geometry.forEachSegment((start, end) => {
-      var dx = end[0] - start[0], dy = end[1] - start[1];
-      var sense = dx > 0 ? 1 : -1;
-
-      var len = Math.sqrt(dx*dx + dy*dy);
-      var perpDX = perpLen * -dy / len, perpDY = perpLen * dx / len;
-
-      var perpGeom = new ol.geom.MultiLineString([
-        [
-          [start[0] - perpDX, start[1] - perpDY],
-          [start[0] + perpDX, start[1] + perpDY],
-        ],
-        [
-          [end[0] - perpDX, end[1] - perpDY],
-          [end[0] + perpDX, end[1] + perpDY],
-        ],
-      ]);
-
-      styles = styles.concat([
-        new ol.style.Style({
-          geometry: perpGeom,
-          stroke: innerStrokeStyle,
-          zIndex: 90,
-        }),
-        new ol.style.Style({
-          geometry: perpGeom,
-          stroke: outerStrokeStyle,
-          zIndex: 100,
-        }),
-        new ol.style.Style({
-          geometry: new ol.geom.Point([
-              0.5 * (end[0] + start[0]) + sense * 0.5 * perpDX,
-              0.5 * (end[1] + start[1]) + sense * 0.5 * perpDY,
-          ]),
-          text: new ol.style.Text({
-            text: feature.label,
-            rotation: Math.atan2(-sense * dy, Math.abs(dx)),
-            offsetX: 0, offsetY: 0,
-            font: '15px sans-serif',
-            fill: new ol.style.Fill({ color: innerColor }),
-            stroke: new ol.style.Stroke({ color: outerColor, width: 2 }),
-          }),
-        }),
-      ]);
-    });
-  }
-
-  return styles;
-}
 
 function filterState(state) {
   let { currentlyDrawing, features } = state;
@@ -117,10 +53,12 @@ class ImageEditor extends React.Component {
     this.scaleSource = new ol.source.Vector();
     this.scaleLayer = new ol.layer.Vector({
       source: this.scaleSource, zIndex: 100,
+      style: linearMeasurementStyle,
     });
 
-    // The current draw interaction
+    // The current draw interaction and sketch feature
     this.draw = null;
+    this.sketchFeature = null;
 
     // URL to current image
     this.imageUrl = null;
@@ -166,6 +104,18 @@ class ImageEditor extends React.Component {
       return;
     }
 
+    // Has the length unit changed?
+    if(nextProps.lengthUnit.id !== this.props.lengthUnit.id) {
+      // Update any sketch feature
+      if(this.sketchFeature) { this.sketchFeature.unit = nextProps.lengthUnit; }
+
+      // Update scale features
+      this.scaleSource.getFeatures().forEach(feature => {
+        feature.unit = nextProps.lengthUnit;
+        feature.changed();
+      });
+    }
+
     // Is there a new image URL?
     if(nextProps.record) {
       var nextImageUrl = imageUrlFromRecord(nextProps.record);
@@ -204,9 +154,6 @@ class ImageEditor extends React.Component {
       [...scaleIds].filter(id => !nextScaleIds.has(id)));
 
     // Remove any scales we need to
-    console.log('remove', removedScaleIds);
-    console.log('insert', insertedScaleIds);
-
     removedScaleIds.forEach(id => {
       let f = this.scaleSource.getFeatureById(id);
       if(f) { this.scaleSource.removeFeature(f); }
@@ -217,7 +164,9 @@ class ImageEditor extends React.Component {
       nextProps.features.scales.forEach(s => {
         if(!insertedScaleIds.has(s.id)) { return; }
         let geometry = new ol.geom.LineString([s.startPoint, s.endPoint]);
-        let f = new ol.Feature({ length: s.length, geometry });
+        let f = new ol.Feature(geometry);
+        f.length = s.length;
+        f.unit = this.props.lengthUnit;
         f.setId(s.id);
         this.scaleSource.addFeature(f);
       });
@@ -276,13 +225,7 @@ class ImageEditor extends React.Component {
         let geometry = f.getGeometry();
 
         if(geometry.getType() == 'LineString') {
-          let label = '';
-          if(f.length) {
-            label = formatLength(f.length, this.props.lengthUnit) +
-              ' ' + this.props.lengthUnit.shortName;
-          }
-          f.label = label;
-          return measurementStyleFunction(f, r);
+          return linearMeasurementStyle(f, r);
         }
 
         if(geometry.getType() == 'Point') {
@@ -293,10 +236,10 @@ class ImageEditor extends React.Component {
       },
     });
 
-    let sketchFeature = null;
     this.draw.on('drawstart', (event) => {
-      sketchFeature = event.feature;
-      sketchFeature.length = worldLength;
+      this.sketchFeature = event.feature;
+      this.sketchFeature.length = worldLength;
+      this.sketchFeature.unit = this.props.lengthUnit;
       /*
       sketchFeature.on('change', () => {
         this.props.dispatch(updatedDrawing({
@@ -309,10 +252,9 @@ class ImageEditor extends React.Component {
 
     this.draw.on('drawend', () => {
       if(!this.map) { return; }
-      this.map.removeInteraction(this.draw);
-      this.draw = null;
+
       let geom;
-      if(sketchFeature) { geom = sketchFeature.getGeometry(); }
+      if(this.sketchFeature) { geom = this.sketchFeature.getGeometry(); }
       this.props.dispatch(finishedDrawing({
         type: SCALE, geometry: geom, properties: { worldLength },
       }));
@@ -321,6 +263,10 @@ class ImageEditor extends React.Component {
         let coords = geom.getCoordinates();
         this.props.dispatch(addScale(coords[0], coords[1], worldLength));
       }
+
+      this.map.removeInteraction(this.draw);
+      this.draw = null;
+      this.sketchFeature = null;
     });
 
     this.map.addInteraction(this.draw);
