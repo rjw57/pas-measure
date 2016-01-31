@@ -19,6 +19,10 @@ function filterState(state) {
   return { currentlyDrawing, features };
 }
 
+const scaleStyleOpts = {
+  innerColor: '#ffcc33',
+};
+
 class ImageEditor extends React.Component {
   constructor(props) {
     super(props);
@@ -53,7 +57,9 @@ class ImageEditor extends React.Component {
     this.scaleSource = new ol.source.Vector();
     this.scaleLayer = new ol.layer.Vector({
       source: this.scaleSource, zIndex: 100,
-      style: linearMeasurementStyle,
+      style: linearMeasurementStyle(
+        Object.assign(scaleStyleOpts, { lengthUnit: this.props.lengthUnit })
+      ),
     });
 
     // The current draw interaction and sketch feature
@@ -109,11 +115,9 @@ class ImageEditor extends React.Component {
       // Update any sketch feature
       if(this.sketchFeature) { this.sketchFeature.unit = nextProps.lengthUnit; }
 
-      // Update scale features
-      this.scaleSource.getFeatures().forEach(feature => {
-        feature.unit = nextProps.lengthUnit;
-        feature.changed();
-      });
+      this.scaleLayer.setStyle(linearMeasurementStyle(
+        Object.assign(scaleStyleOpts, { lengthUnit: nextProps.lengthUnit })
+      ));
     }
 
     // Is there a new image URL?
@@ -166,7 +170,6 @@ class ImageEditor extends React.Component {
         let geometry = new ol.geom.LineString([s.startPoint, s.endPoint]);
         let f = new ol.Feature(geometry);
         f.length = s.length;
-        f.unit = this.props.lengthUnit;
         f.setId(s.id);
         this.scaleSource.addFeature(f);
       });
@@ -225,7 +228,7 @@ class ImageEditor extends React.Component {
         let geometry = f.getGeometry();
 
         if(geometry.getType() == 'LineString') {
-          return linearMeasurementStyle(f, r);
+          return this.scaleLayer.getStyle()(f, r);
         }
 
         if(geometry.getType() == 'Point') {
@@ -239,7 +242,6 @@ class ImageEditor extends React.Component {
     this.draw.on('drawstart', (event) => {
       this.sketchFeature = event.feature;
       this.sketchFeature.length = worldLength;
-      this.sketchFeature.unit = this.props.lengthUnit;
       /*
       sketchFeature.on('change', () => {
         this.props.dispatch(updatedDrawing({
