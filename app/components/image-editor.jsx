@@ -13,7 +13,7 @@ import {
 
 require('style!css!./image-editor.css');
 
-function measurementStyleFunction(feature, resolution, label) {
+function measurementStyleFunction(feature, resolution) {
   // resolution is "projection units per pixel"
   var perpPixLen = 20, perpLen = resolution * perpPixLen;
   var outerColor = 'rgba(51, 51, 51, 0.5)', innerColor = '#ffcc33';
@@ -28,7 +28,7 @@ function measurementStyleFunction(feature, resolution, label) {
   var geometry = feature.getGeometry();
 
   if(geometry.getType() === 'LineString') {
-    geometry.forEachSegment(function(start, end) {
+    geometry.forEachSegment((start, end) => {
       var dx = end[0] - start[0], dy = end[1] - start[1];
       var sense = dx > 0 ? 1 : -1;
 
@@ -63,7 +63,7 @@ function measurementStyleFunction(feature, resolution, label) {
               0.5 * (end[1] + start[1]) + sense * 0.5 * perpDY,
           ]),
           text: new ol.style.Text({
-            text: label,
+            text: feature.label,
             rotation: Math.atan2(-sense * dy, Math.abs(dx)),
             offsetX: 0, offsetY: 0,
             font: '15px sans-serif',
@@ -271,11 +271,15 @@ class ImageEditor extends React.Component {
       minPoints: 2, maxPoints: 2,
       style: (f, r) => {
         let geometry = f.getGeometry();
-        let label = formatLength(worldLength, this.props.lengthUnit) +
-          ' ' + this.props.lengthUnit.shortName;
 
         if(geometry.getType() == 'LineString') {
-          return measurementStyleFunction(f, r, label);
+          let label = '';
+          if(f.length) {
+            label = formatLength(f.length, this.props.lengthUnit) +
+              ' ' + this.props.lengthUnit.shortName;
+          }
+          f.label = label;
+          return measurementStyleFunction(f, r);
         }
 
         if(geometry.getType() == 'Point') {
@@ -289,6 +293,7 @@ class ImageEditor extends React.Component {
     let sketchFeature = null;
     this.draw.on('drawstart', (event) => {
       sketchFeature = event.feature;
+      sketchFeature.length = worldLength;
       /*
       sketchFeature.on('change', () => {
         this.props.dispatch(updatedDrawing({
