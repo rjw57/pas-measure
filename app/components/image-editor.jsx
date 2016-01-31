@@ -189,6 +189,36 @@ class ImageEditor extends React.Component {
           break;
       }
     }
+
+    // Scales
+    // Form a set of current scale ids and next scale ids.
+    let scaleIds = new Set(this.props.features.scales.map(s => s.id));
+    let nextScaleIds = new Set(nextProps.features.scales.map(s => s.id));
+
+    // Set of scale ids which have been inserted
+    let insertedScaleIds = new Set(
+      [...nextScaleIds].filter(id => !scaleIds.has(id)));
+
+    // Set of scale ids which have been deleted
+    let removedScaleIds = new Set(
+      [...scaleIds].filter(id => !nextScaleIds.has(id)));
+
+    // Remove any scales we need to
+    removedScaleIds.forEach(id =>
+      this.scaleSource.removeFeature(this.scaleSource.getFetureById(id)));
+
+    // Now insert any new scales
+    if(insertedScaleIds.size > 0) {
+      nextProps.features.scales.forEach(s => {
+        console.log('considering', s);
+        if(!insertedScaleIds.has(s.id)) { return; }
+        console.log('inserting', s);
+        let geometry = new ol.geom.LineString([s.startPoint, s.endPoint]);
+        this.scaleSource.addFeature(new ol.Feature({
+          id: s.id, length: s.length, geometry
+        }));
+      });
+    }
   }
 
   // Set a new image URL
