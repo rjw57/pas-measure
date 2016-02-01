@@ -40838,11 +40838,21 @@
 	    value: function render() {
 	      var _this3 = this;
 	
+	      var addButton = _react2.default.createElement(
+	        _reactBootstrap.Button,
+	        { onClick: this.props.onAdd, disabled: this.props.addDisabled },
+	        _react2.default.createElement(
+	          'small',
+	          null,
+	          _react2.default.createElement(_reactBootstrap.Glyphicon, { glyph: 'plus' })
+	        )
+	      );
 	      return _react2.default.createElement(_reactBootstrap.Input, { ref: 'input', type: 'number', placeholder: '1.23', step: '0.1',
 	        value: this.state.inputValue, onInput: function onInput(e) {
 	          return _this3.handleInput(e);
 	        },
-	        addonAfter: this.props.unit.shortName });
+	        addonAfter: this.props.unit.shortName,
+	        buttonBefore: addButton });
 	    }
 	  }]);
 	
@@ -40905,15 +40915,11 @@
 	          _react2.default.createElement(LengthInput, { unit: options.lengthUnit,
 	            onInput: function onInput(l) {
 	              return _this5.setState({ scaleLength: l });
-	            } }),
-	          _react2.default.createElement(
-	            _reactBootstrap.Button,
-	            { block: true, disabled: addScaleDisabled,
-	              onClick: function onClick() {
-	                return _this5.handleAddScaleClick();
-	              } },
-	            'Add scale'
-	          )
+	            },
+	            onAdd: function onAdd() {
+	              return _this5.handleAddScaleClick();
+	            },
+	            addDisabled: addScaleDisabled })
 	        )
 	      );
 	    }
@@ -40965,6 +40971,7 @@
 	      _react2.default.createElement(
 	        'tr',
 	        null,
+	        _react2.default.createElement('th', null),
 	        _react2.default.createElement(
 	          'th',
 	          null,
@@ -40986,19 +40993,7 @@
 	          { key: scale.id },
 	          _react2.default.createElement(
 	            'td',
-	            null,
-	            formatScalePixelLength(scale),
-	            ' px'
-	          ),
-	          _react2.default.createElement(
-	            'td',
-	            null,
-	            (0, _utils.formatLength)(scale.length, props.unit),
-	            props.unit.shortName
-	          ),
-	          _react2.default.createElement(
-	            'td',
-	            { className: 'text-right' },
+	            { width: '0', className: 'text-center' },
 	            _react2.default.createElement(
 	              _reactBootstrap.Button,
 	              { bsSize: 'xsmall', bsStyle: 'danger',
@@ -41007,6 +41002,18 @@
 	                } : null },
 	              _react2.default.createElement(_reactBootstrap.Glyphicon, { glyph: 'trash' })
 	            )
+	          ),
+	          _react2.default.createElement(
+	            'td',
+	            { width: '*' },
+	            formatScalePixelLength(scale),
+	            ' px'
+	          ),
+	          _react2.default.createElement(
+	            'td',
+	            { width: '*' },
+	            (0, _utils.formatLength)(scale.length, props.unit),
+	            props.unit.shortName
 	          )
 	        );
 	      })
@@ -41104,7 +41111,7 @@
 	
 	
 	// module
-	exports.push([module.id, ".application { position: fixed; left: 0; right: 0; top: 0; bottom: 0; }\n.application-image, .application-sidebar {\n  position: absolute; top: 0; bottom: 0;\n}\n\n.application-image { left: 0; right: 20em; }\n.application-sidebar { right: 0; width: 20em; }\n\n.application-sidebar {\n  border-left: 1px solid rgb(225, 225, 232);\n  overflow-y: auto;\n}\n", ""]);
+	exports.push([module.id, ".application { position: fixed; left: 0; right: 0; top: 0; bottom: 0; }\n.application-image, .application-sidebar {\n  position: absolute; top: 0; bottom: 0;\n}\n\n.application-image { left: 0; right: 20em; }\n.application-sidebar { right: 0; width: 20em; }\n\n.application-sidebar {\n  border-left: 1px solid rgb(225, 225, 232);\n  overflow-y: auto;\n}\n\n", ""]);
 	
 	// exports
 
