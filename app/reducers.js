@@ -158,6 +158,7 @@ function lineInteraction(state = initialLineInteractionState, action) {
 
 const interactions = combineReducers({
   scale: scaleInteraction,
+  line: lineInteraction,
 });
 
 const app = combineReducers({
