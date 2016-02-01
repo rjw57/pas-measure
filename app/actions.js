@@ -46,30 +46,6 @@ export function fetchRecordIfNeeded(id) {
   }
 }
 
-// Things one may draw
-export const SCALE = 'SCALE';
-
-export const START_DRAWING = 'START_DRAWING';
-export const STARTED_DRAWING = 'STARTED_DRAWING';
-export const UPDATED_DRAWING = 'UPDATED_DRAWING';
-export const FINISHED_DRAWING = 'FINISHED_DRAWING';
-
-export function startDrawing(type, properties) {
-  return { type: START_DRAWING, drawingType: type, properties };
-}
-
-export function startedDrawing(drawing) {
-  return { type: STARTED_DRAWING, drawing };
-}
-
-export function updatedDrawing(drawing) {
-  return { type: UPDATED_DRAWING, drawing };
-}
-
-export function finishedDrawing(drawing) {
-  return { type: FINISHED_DRAWING, drawing };
-}
-
 // Length units which are supported. Each unit has a short name, id
 // and a length in metres. setLengthUnit doesn't need to be passed one of these
 // objects but they're provided as a convenience.
@@ -92,9 +68,8 @@ export function addScale(startPoint, endPoint, length) {
 }
 export function removeScale(scaleId) { return { type: REMOVE_SCALE, id: scaleId }; }
 
-// Requesting that a scale be drawn
-export function startDrawingScale(length) {
-  return dispatch => {
-    dispatch(startDrawing(SCALE, { worldLength: length }));
-  }
-}
+// Drawing scales
+export const START_DRAWING_SCALE = 'START_DRAWING_SCALE';
+export const STOP_DRAWING_SCALE = 'STOP_DRAWING_SCALE';
+export let startDrawingScale = length => ({ type: START_DRAWING_SCALE, payload: { length } });
+export let stopDrawingScale = () => ({ type: STOP_DRAWING_SCALE });

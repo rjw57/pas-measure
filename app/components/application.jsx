@@ -2,8 +2,8 @@ import React from 'react';
 import { connect } from 'react-redux'
 
 import {
-  selectRecord, cancelSelectRecord, fetchRecordIfNeeded, addScale,
-  finishedDrawing,
+  selectRecord, cancelSelectRecord, fetchRecordIfNeeded,
+  addScale, stopDrawingScale
 } from '../actions.js';
 
 import { imageUrlFromRecord } from '../pas-api.js';
@@ -40,7 +40,7 @@ export default connect(filterState)(React.createClass({
   render: function() {
     const {
       dispatch, showSelectRecordModal, recordsById, selectedRecordId,
-      options, features, currentlyDrawing
+      options, features, interactions,
     } = this.props;
 
     let currentRecord, currentRecordIsFetching, imageSrc;
@@ -50,8 +50,12 @@ export default connect(filterState)(React.createClass({
       imageSrc = imageUrlFromRecord(currentRecord);
     }
 
+    let scaleInt = interactions.scale;
+
     function onAddScale(s) {
-      dispatch(finishedDrawing());
+      if(scaleInt && scaleInt.isDrawing) {
+        dispatch(stopDrawingScale());
+      }
       dispatch(addScale(s.startPoint, s.endPoint, s.length));
     }
 
@@ -59,7 +63,9 @@ export default connect(filterState)(React.createClass({
       <div className="application">
         <div className="application-image">
           <ImageEditor lengthUnit={options.lengthUnit} imageSrc={imageSrc}
-                       features={features} currentlyDrawing={currentlyDrawing}
+                       features={features}
+                       isDrawingScale={scaleInt ? scaleInt.isDrawing : false}
+                       nextScaleLength={scaleInt ? scaleInt.length : null}
                        onAddScale={onAddScale} />
         </div>
         <div className="application-sidebar">

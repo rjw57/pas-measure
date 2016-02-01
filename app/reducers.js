@@ -4,12 +4,11 @@ import {
 
   REQUEST_RECORD, RECEIVE_RECORD, SELECT_RECORD,
 
-  START_DRAWING, STARTED_DRAWING, FINISHED_DRAWING,
-  UPDATED_DRAWING, SET_LENGTH_UNIT,
+  SET_LENGTH_UNIT, LENGTH_UNITS,
 
   ADD_SCALE, REMOVE_SCALE,
 
-  SCALE, LENGTH_UNITS
+  START_DRAWING_SCALE, STOP_DRAWING_SCALE,
 } from './actions.js';
 
 function selectedRecordId(state = null, action) {
@@ -64,34 +63,6 @@ function showSelectRecordModal(state = false, action) {
   }
 }
 
-/* The editor state consists of what type of object is currently being drawn (or
- * null if there is no current drawing) and a collection of objects. Each object
- * has a geometry property which is an ol.Geometry instance describing the
- * geometry of the drawn object. Each object also has a unique id accessible
- * through the id property.
- */
-
-const initialCurrentlyDrawingState = {
-  type: null,
-  geometry: null,
-};
-
-function currentlyDrawing(state = initialCurrentlyDrawingState, action) {
-  switch(action.type) {
-    case START_DRAWING:
-      return Object.assign({}, state, {
-        type: action.drawingType, properties: action.properties, geometry: null
-      });
-    case STARTED_DRAWING:
-    case UPDATED_DRAWING:
-      return Object.assign({}, state, action.drawing);
-    case FINISHED_DRAWING:
-      return Object.assign({}, state, { type: null, geometry: null });
-    default:
-      return state;
-  }
-}
-
 // Scales
 let nextScaleId = 1;
 function scale(state, action) {
@@ -132,11 +103,29 @@ const options = combineReducers({
   lengthUnit,
 });
 
+const initialScaleInteractionState = { isDrawing: false, length: null };
+
+function scaleInteraction(state = initialScaleInteractionState, action) {
+  switch(action.type) {
+    case START_DRAWING_SCALE:
+      let { length } = action.payload;
+      return Object.assign({}, state, { isDrawing: true, length });
+    case STOP_DRAWING_SCALE:
+      return Object.assign({}, state, { isDrawing: false, length: null });
+    default:
+      return state;
+  }
+}
+
+const interactions = combineReducers({
+  scale: scaleInteraction,
+});
+
 const app = combineReducers({
   selectedRecordId,
   recordsById,
   showSelectRecordModal,
-  currentlyDrawing,
+  interactions,
   features,
   options,
 });

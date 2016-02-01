@@ -2,8 +2,6 @@ import React from 'react';
 import { connect } from 'react-redux'
 import ol from 'openlayers';
 
-import { SCALE } from '../actions.js';
-
 import { formatLength } from '../utils.js';
 import {
   linearMeasurementStyle, createNeutralBackgroundSource
@@ -103,23 +101,16 @@ class ImageEditor extends React.Component {
       ));
     }
 
-    // Drawing
-    if(nextProps.currentlyDrawing.type !== this.props.currentlyDrawing.type) {
+    // Drawing scales
+    if(nextProps.isDrawingScale !== this.props.isDrawingScale) {
       // We've changed what we're drawing so come what may, we need to
       // remove any current drawing.
       this.removeCurrentDrawing();
-
-      let drawProps = nextProps.currentlyDrawing.properties;
-
-      // What are we drawing?
-      switch(nextProps.currentlyDrawing.type) {
-        case SCALE:
-          this.startDrawingScale(drawProps.worldLength);
-          break;
-      }
+      this.startDrawingScale(nextProps.nextScaleLength);
     }
 
-    // Scales
+    ////// Scale features //////
+
     // Form a set of current scale ids and next scale ids.
     let scaleIds = new Set(this.props.features.scales.map(s => s.id));
     let nextScaleIds = new Set(nextProps.features.scales.map(s => s.id));
@@ -225,12 +216,6 @@ class ImageEditor extends React.Component {
       let geom;
       if(this.sketchFeature) { geom = this.sketchFeature.getGeometry(); }
 
-      /*
-      this.props.dispatch(finishedDrawing({
-        type: SCALE, geometry: geom, properties: { worldLength },
-      }));
-      */
-
       if(geom && this.props.onAddScale) {
         let coords = geom.getCoordinates();
         this.props.onAddScale({
@@ -244,12 +229,6 @@ class ImageEditor extends React.Component {
     });
 
     this.map.addInteraction(this.draw);
-
-    /*
-    this.props.dispatch(startedDrawing({
-      type: SCALE, geometry: null, properties: { worldLength },
-    }));
-    */
   }
 }
 
