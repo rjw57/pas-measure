@@ -2,8 +2,6 @@ import React from 'react';
 import { connect } from 'react-redux'
 import ol from 'openlayers';
 
-import { imageUrlFromRecord } from '../pas-api.js';
-
 import { formatLength } from '../utils.js';
 import { linearMeasurementStyle } from '../map-utils.js';
 
@@ -104,10 +102,9 @@ class ImageEditor extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    // Has the record gone away?
-    if(!nextProps.record && this.props.record) {
-      setImageUrl(null);
-      return;
+    // Is there a new image URL?
+    if(nextProps.imageSrc !== this.props.imageSrc) {
+      this.setImageUrl(nextProps.imageSrc);
     }
 
     // Has the length unit changed?
@@ -118,14 +115,6 @@ class ImageEditor extends React.Component {
       this.scaleLayer.setStyle(linearMeasurementStyle(
         Object.assign(scaleStyleOpts, { lengthUnit: nextProps.lengthUnit })
       ));
-    }
-
-    // Is there a new image URL?
-    if(nextProps.record) {
-      var nextImageUrl = imageUrlFromRecord(nextProps.record);
-      if(nextImageUrl !== this.imageUrl) {
-        this.setImageUrl(nextImageUrl);
-      }
     }
 
     // Drawing

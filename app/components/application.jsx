@@ -5,6 +5,7 @@ import {
   selectRecord, cancelSelectRecord, fetchRecordIfNeeded
 } from '../actions.js';
 
+import { imageUrlFromRecord } from '../pas-api.js';
 import ImageEditor from './image-editor.jsx'
 import SelectRecordModal from './select-record-modal.jsx';
 import Sidebar from './sidebar.jsx'
@@ -41,16 +42,17 @@ export default connect(filterState)(React.createClass({
       options
     } = this.props;
 
-    let currentRecord, currentRecordIsFetching;
+    let currentRecord, currentRecordIsFetching, imageSrc;
     if((selectedRecordId !== null) && (recordsById[selectedRecordId])) {
       currentRecord = recordsById[selectedRecordId].record;
       currentRecordIsFetching = recordsById[selectedRecordId].isFetching;
+      imageSrc = imageUrlFromRecord(currentRecord);
     }
 
     return (
       <div className="application">
         <div className="application-image">
-          <ImageEditor lengthUnit={options.lengthUnit} record={currentRecord} />
+          <ImageEditor lengthUnit={options.lengthUnit} imageSrc={imageSrc} />
         </div>
         <div className="application-sidebar">
           <Sidebar record={currentRecord} />
