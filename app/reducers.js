@@ -7,8 +7,10 @@ import {
   SET_LENGTH_UNIT, LENGTH_UNITS,
 
   ADD_SCALE, REMOVE_SCALE,
-
   START_DRAWING_SCALE, STOP_DRAWING_SCALE,
+
+  ADD_LINE, REMOVE_LINE,
+  START_DRAWING_LINE, STOP_DRAWING_LINE,
 } from './actions.js';
 
 function selectedRecordId(state = null, action) {
@@ -86,8 +88,31 @@ function scales(state = [], action) {
   }
 }
 
+// Lines
+let nextLineId = 1;
+function line(state, action) {
+  switch(action.type) {
+    case ADD_LINE:
+      let { startPoint, endPoint, length } = action;
+      return { id: nextLineId++, startPoint, endPoint, length };
+    default:
+      return state;
+  }
+}
+
+function lines(state = [], action) {
+  switch(action.type) {
+    case ADD_LINE:
+      return [...state, line(undefined, action)];
+    case REMOVE_LINE:
+      return state.filter(s => s.id !== action.id);
+    default:
+      return state;
+  }
+}
+
 const features = combineReducers({
-  scales,
+  scales, lines,
 });
 
 function lengthUnit(state = LENGTH_UNITS[0], action) {
@@ -112,6 +137,20 @@ function scaleInteraction(state = initialScaleInteractionState, action) {
       return Object.assign({}, state, { isDrawing: true, length });
     case STOP_DRAWING_SCALE:
       return Object.assign({}, state, { isDrawing: false, length: null });
+    default:
+      return state;
+  }
+}
+
+const initialLineInteractionState = { isDrawing: false };
+
+function lineInteraction(state = initialLineInteractionState, action) {
+  switch(action.type) {
+    case START_DRAWING_LINE:
+      let { length } = action.payload;
+      return Object.assign({}, state, { isDrawing: true });
+    case STOP_DRAWING_LINE:
+      return Object.assign({}, state, { isDrawing: false });
     default:
       return state;
   }
