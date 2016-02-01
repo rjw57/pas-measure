@@ -43,6 +43,27 @@ export default connect(filterState)(React.createClass({
       options, features, interactions,
     } = this.props;
 
+    let pixelLengthMean = 0, pixelLengthSqMean = 0, pixelLengthVariance = 0;
+    let pixelLengthStdDev;
+    if(features.scales.length >= 2) {
+      let nFeats = features.scales.length;
+      features.scales.forEach(s => {
+        let dx = s.endPoint[0] - s.startPoint[0];
+        let dy = s.endPoint[1] - s.startPoint[1];
+        let pixelLength = s.length / Math.sqrt(dx*dx + dy*dy);
+        pixelLengthMean += pixelLength;
+        pixelLengthSqMean += pixelLength * pixelLength;
+      });
+      pixelLengthMean /= nFeats;
+      pixelLengthSqMean /= nFeats;
+      pixelLengthVariance = pixelLengthSqMean -
+        (1.0 - 1.0 / nFeats) * pixelLengthMean * pixelLengthMean;
+      pixelLengthStdDev = Math.sqrt(pixelLengthVariance);
+    } else {
+      pixelLengthMean = null;
+      pixelLengthVariance = null;
+    }
+
     let currentRecord, currentRecordIsFetching, imageSrc;
     if((selectedRecordId !== null) && (recordsById[selectedRecordId])) {
       currentRecord = recordsById[selectedRecordId].record;
@@ -66,7 +87,10 @@ export default connect(filterState)(React.createClass({
                        features={features}
                        isDrawingScale={scaleInt ? scaleInt.isDrawing : false}
                        nextScaleLength={scaleInt ? scaleInt.length : null}
-                       onAddScale={onAddScale} />
+                       onAddScale={onAddScale}
+                       pixelLengthMean={pixelLengthMean}
+                       pixelLengthStdDev={pixelLengthStdDev}
+                       />
         </div>
         <div className="application-sidebar">
           <Sidebar record={currentRecord} />
