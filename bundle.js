@@ -20611,37 +20611,6 @@
 	  }
 	}
 	
-	/* The editor state consists of what type of object is currently being drawn (or
-	 * null if there is no current drawing) and a collection of objects. Each object
-	 * has a geometry property which is an ol.Geometry instance describing the
-	 * geometry of the drawn object. Each object also has a unique id accessible
-	 * through the id property.
-	 */
-	
-	var initialCurrentlyDrawingState = {
-	  type: null,
-	  geometry: null
-	};
-	
-	function currentlyDrawing() {
-	  var state = arguments.length <= 0 || arguments[0] === undefined ? initialCurrentlyDrawingState : arguments[0];
-	  var action = arguments[1];
-	
-	  switch (action.type) {
-	    case _actions.START_DRAWING:
-	      return Object.assign({}, state, {
-	        type: action.drawingType, properties: action.properties, geometry: null
-	      });
-	    case _actions.STARTED_DRAWING:
-	    case _actions.UPDATED_DRAWING:
-	      return Object.assign({}, state, action.drawing);
-	    case _actions.FINISHED_DRAWING:
-	      return Object.assign({}, state, { type: null, geometry: null });
-	    default:
-	      return state;
-	  }
-	}
-	
 	// Scales
 	var nextScaleId = 1;
 	function scale(state, action) {
@@ -20693,11 +20662,33 @@
 	  lengthUnit: lengthUnit
 	});
 	
+	var initialScaleInteractionState = { isDrawing: false, length: null };
+	
+	function scaleInteraction() {
+	  var state = arguments.length <= 0 || arguments[0] === undefined ? initialScaleInteractionState : arguments[0];
+	  var action = arguments[1];
+	
+	  switch (action.type) {
+	    case _actions.START_DRAWING_SCALE:
+	      var length = action.payload.length;
+	
+	      return Object.assign({}, state, { isDrawing: true, length: length });
+	    case _actions.STOP_DRAWING_SCALE:
+	      return Object.assign({}, state, { isDrawing: false, length: null });
+	    default:
+	      return state;
+	  }
+	}
+	
+	var interactions = (0, _redux.combineReducers)({
+	  scale: scaleInteraction
+	});
+	
 	var app = (0, _redux.combineReducers)({
 	  selectedRecordId: selectedRecordId,
 	  recordsById: recordsById,
 	  showSelectRecordModal: showSelectRecordModal,
-	  currentlyDrawing: currentlyDrawing,
+	  interactions: interactions,
 	  features: features,
 	  options: options
 	});
@@ -20713,19 +20704,14 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.REMOVE_SCALE = exports.ADD_SCALE = exports.SET_LENGTH_UNIT = exports.LENGTH_UNITS = exports.FINISHED_DRAWING = exports.UPDATED_DRAWING = exports.STARTED_DRAWING = exports.START_DRAWING = exports.SCALE = exports.SELECT_RECORD = exports.RECEIVE_RECORD = exports.REQUEST_RECORD = exports.CANCEL_SELECT_RECORD = exports.REQUEST_SELECT_RECORD = undefined;
+	exports.stopDrawingScale = exports.startDrawingScale = exports.STOP_DRAWING_SCALE = exports.START_DRAWING_SCALE = exports.REMOVE_SCALE = exports.ADD_SCALE = exports.SET_LENGTH_UNIT = exports.LENGTH_UNITS = exports.SELECT_RECORD = exports.RECEIVE_RECORD = exports.REQUEST_RECORD = exports.CANCEL_SELECT_RECORD = exports.REQUEST_SELECT_RECORD = undefined;
 	exports.cancelSelectRecord = cancelSelectRecord;
 	exports.requestSelectRecord = requestSelectRecord;
 	exports.selectRecord = selectRecord;
 	exports.fetchRecordIfNeeded = fetchRecordIfNeeded;
-	exports.startDrawing = startDrawing;
-	exports.startedDrawing = startedDrawing;
-	exports.updatedDrawing = updatedDrawing;
-	exports.finishedDrawing = finishedDrawing;
 	exports.setLengthUnit = setLengthUnit;
 	exports.addScale = addScale;
 	exports.removeScale = removeScale;
-	exports.startDrawingScale = startDrawingScale;
 	
 	var _pasApi = __webpack_require__(171);
 	
@@ -20789,30 +20775,6 @@
 	  };
 	}
 	
-	// Things one may draw
-	var SCALE = exports.SCALE = 'SCALE';
-	
-	var START_DRAWING = exports.START_DRAWING = 'START_DRAWING';
-	var STARTED_DRAWING = exports.STARTED_DRAWING = 'STARTED_DRAWING';
-	var UPDATED_DRAWING = exports.UPDATED_DRAWING = 'UPDATED_DRAWING';
-	var FINISHED_DRAWING = exports.FINISHED_DRAWING = 'FINISHED_DRAWING';
-	
-	function startDrawing(type, properties) {
-	  return { type: START_DRAWING, drawingType: type, properties: properties };
-	}
-	
-	function startedDrawing(drawing) {
-	  return { type: STARTED_DRAWING, drawing: drawing };
-	}
-	
-	function updatedDrawing(drawing) {
-	  return { type: UPDATED_DRAWING, drawing: drawing };
-	}
-	
-	function finishedDrawing(drawing) {
-	  return { type: FINISHED_DRAWING, drawing: drawing };
-	}
-	
 	// Length units which are supported. Each unit has a short name, id
 	// and a length in metres. setLengthUnit doesn't need to be passed one of these
 	// objects but they're provided as a convenience.
@@ -20835,12 +20797,15 @@
 	  return { type: REMOVE_SCALE, id: scaleId };
 	}
 	
-	// Requesting that a scale be drawn
-	function startDrawingScale(length) {
-	  return function (dispatch) {
-	    dispatch(startDrawing(SCALE, { worldLength: length }));
-	  };
-	}
+	// Drawing scales
+	var START_DRAWING_SCALE = exports.START_DRAWING_SCALE = 'START_DRAWING_SCALE';
+	var STOP_DRAWING_SCALE = exports.STOP_DRAWING_SCALE = 'STOP_DRAWING_SCALE';
+	var startDrawingScale = exports.startDrawingScale = function startDrawingScale(length) {
+	  return { type: START_DRAWING_SCALE, payload: { length: length } };
+	};
+	var stopDrawingScale = exports.stopDrawingScale = function stopDrawingScale() {
+	  return { type: STOP_DRAWING_SCALE };
+	};
 
 /***/ },
 /* 171 */
@@ -22000,7 +21965,7 @@
 	    var selectedRecordId = _props2.selectedRecordId;
 	    var options = _props2.options;
 	    var features = _props2.features;
-	    var currentlyDrawing = _props2.currentlyDrawing;
+	    var interactions = _props2.interactions;
 	
 	    var currentRecord = undefined,
 	        currentRecordIsFetching = undefined,
@@ -22011,8 +21976,12 @@
 	      imageSrc = (0, _pasApi.imageUrlFromRecord)(currentRecord);
 	    }
 	
+	    var scaleInt = interactions.scale;
+	
 	    function onAddScale(s) {
-	      dispatch((0, _actions.finishedDrawing)());
+	      if (scaleInt && scaleInt.isDrawing) {
+	        dispatch((0, _actions.stopDrawingScale)());
+	      }
 	      dispatch((0, _actions.addScale)(s.startPoint, s.endPoint, s.length));
 	    }
 	
@@ -22023,7 +21992,9 @@
 	        'div',
 	        { className: 'application-image' },
 	        _react2.default.createElement(_imageEditor2.default, { lengthUnit: options.lengthUnit, imageSrc: imageSrc,
-	          features: features, currentlyDrawing: currentlyDrawing,
+	          features: features,
+	          isDrawingScale: scaleInt ? scaleInt.isDrawing : false,
+	          nextScaleLength: scaleInt ? scaleInt.length : null,
 	          onAddScale: onAddScale })
 	      ),
 	      _react2.default.createElement(
@@ -22063,8 +22034,6 @@
 	var _openlayers = __webpack_require__(187);
 	
 	var _openlayers2 = _interopRequireDefault(_openlayers);
-	
-	var _actions = __webpack_require__(170);
 	
 	var _utils = __webpack_require__(188);
 	
@@ -22184,23 +22153,16 @@
 	        this.scaleLayer.setStyle((0, _mapUtils.linearMeasurementStyle)(Object.assign(scaleStyleOpts, { lengthUnit: nextProps.lengthUnit })));
 	      }
 	
-	      // Drawing
-	      if (nextProps.currentlyDrawing.type !== this.props.currentlyDrawing.type) {
+	      // Drawing scales
+	      if (nextProps.isDrawingScale !== this.props.isDrawingScale) {
 	        // We've changed what we're drawing so come what may, we need to
 	        // remove any current drawing.
 	        this.removeCurrentDrawing();
-	
-	        var drawProps = nextProps.currentlyDrawing.properties;
-	
-	        // What are we drawing?
-	        switch (nextProps.currentlyDrawing.type) {
-	          case _actions.SCALE:
-	            this.startDrawingScale(drawProps.worldLength);
-	            break;
-	        }
+	        this.startDrawingScale(nextProps.nextScaleLength);
 	      }
 	
-	      // Scales
+	      ////// Scale features //////
+	
 	      // Form a set of current scale ids and next scale ids.
 	      var scaleIds = new Set(this.props.features.scales.map(function (s) {
 	        return s.id;
@@ -22328,12 +22290,6 @@
 	          geom = _this3.sketchFeature.getGeometry();
 	        }
 	
-	        /*
-	        this.props.dispatch(finishedDrawing({
-	          type: SCALE, geometry: geom, properties: { worldLength },
-	        }));
-	        */
-	
 	        if (geom && _this3.props.onAddScale) {
 	          var coords = geom.getCoordinates();
 	          _this3.props.onAddScale({
@@ -22347,12 +22303,6 @@
 	      });
 	
 	      this.map.addInteraction(this.draw);
-	
-	      /*
-	      this.props.dispatch(startedDrawing({
-	        type: SCALE, geometry: null, properties: { worldLength },
-	      }));
-	      */
 	    }
 	  }]);
 	
