@@ -147,7 +147,6 @@ const initialLineInteractionState = { isDrawing: false };
 function lineInteraction(state = initialLineInteractionState, action) {
   switch(action.type) {
     case START_DRAWING_LINE:
-      let { length } = action.payload;
       return Object.assign({}, state, { isDrawing: true });
     case STOP_DRAWING_LINE:
       return Object.assign({}, state, { isDrawing: false });
