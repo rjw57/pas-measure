@@ -93,3 +93,18 @@ export function linearMeasurementStyle(options) {
     return styles;
   };
 }
+
+// Construct a neutral background image source for maps.
+export function createNeutralBackgroundSource() {
+  return new ol.source.ImageCanvas({
+    canvasFunction(extent, resolution, pxRato, imSize, proj) {
+      let w = imSize[0], h = imSize[1];
+      let canvasElem = document.createElement('canvas');
+      canvasElem.width = w; canvasElem.height = h;
+      let ctx = canvasElem.getContext('2d');
+      ctx.fillStyle = '#bbb';
+      ctx.fillRect(0, 0, w, h);
+      return canvasElem;
+    },
+  });
+}

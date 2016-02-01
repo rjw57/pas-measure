@@ -3,7 +3,9 @@ import { connect } from 'react-redux'
 import ol from 'openlayers';
 
 import { formatLength } from '../utils.js';
-import { linearMeasurementStyle } from '../map-utils.js';
+import {
+  linearMeasurementStyle, createNeutralBackgroundSource
+} from '../map-utils.js';
 
 import {
   startedDrawing, finishedDrawing, updatedDrawing,
@@ -12,6 +14,7 @@ import {
 
 require('style!css!./image-editor.css');
 
+// Function to extract just what we want from the current global state.
 function filterState(state) {
   let { currentlyDrawing, features } = state;
   return { currentlyDrawing, features };
@@ -21,10 +24,16 @@ const scaleStyleOpts = {
   innerColor: '#ffcc33',
 };
 
+// ImageEditor is a React component which provides a canvas which displays an
+// image and a set of features. It also supports the creation of new features
+// via drawing.
 class ImageEditor extends React.Component {
   constructor(props) {
     super(props);
 
+    // ImageEditor essentially consists of one large OpenLayers map with a
+    // custom projection. The map is created when the component mounts but map
+    // metadata like projection and viewport persist across mounts.
     this.map = null;
     this.projection = new ol.proj.Projection({
       code: 'flat-image', units: 'pixels',
@@ -37,18 +46,7 @@ class ImageEditor extends React.Component {
 
     // A layer for rendering a neutral background
     this.bgLayer = new ol.layer.Image({
-      zIndex: -2000,
-      source: new ol.source.ImageCanvas({
-        canvasFunction(extent, resolution, pxRato, imSize, proj) {
-          var w = imSize[0], h = imSize[1];
-          var canvasElem = document.createElement('canvas');
-          canvasElem.width = w; canvasElem.height = h;
-          var ctx = canvasElem.getContext('2d');
-          ctx.fillStyle = '#bbb';
-          ctx.fillRect(0, 0, w, h);
-          return canvasElem;
-        },
-      }),
+      zIndex: -2000, source: createNeutralBackgroundSource()
     });
 
     // Scales
@@ -109,9 +107,6 @@ class ImageEditor extends React.Component {
 
     // Has the length unit changed?
     if(nextProps.lengthUnit.id !== this.props.lengthUnit.id) {
-      // Update any sketch feature
-      if(this.sketchFeature) { this.sketchFeature.unit = nextProps.lengthUnit; }
-
       this.scaleLayer.setStyle(linearMeasurementStyle(
         Object.assign(scaleStyleOpts, { lengthUnit: nextProps.lengthUnit })
       ));
