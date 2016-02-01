@@ -2,23 +2,14 @@ import React from 'react';
 import { connect } from 'react-redux'
 import ol from 'openlayers';
 
+import { SCALE } from '../actions.js';
+
 import { formatLength } from '../utils.js';
 import {
   linearMeasurementStyle, createNeutralBackgroundSource
 } from '../map-utils.js';
 
-import {
-  startedDrawing, finishedDrawing, updatedDrawing,
-  SCALE, addScale
-} from '../actions.js';
-
 require('style!css!./image-editor.css');
-
-// Function to extract just what we want from the current global state.
-function filterState(state) {
-  let { currentlyDrawing, features } = state;
-  return { currentlyDrawing, features };
-}
 
 const scaleStyleOpts = {
   innerColor: '#ffcc33',
@@ -226,14 +217,6 @@ class ImageEditor extends React.Component {
     this.draw.on('drawstart', (event) => {
       this.sketchFeature = event.feature;
       this.sketchFeature.length = worldLength;
-      /*
-      sketchFeature.on('change', () => {
-        this.props.dispatch(updatedDrawing({
-          type: SCALE, geometry: sketchFeature.getGeometry(),
-          properties: { worldLength },
-        }));
-      });
-      */
     });
 
     this.draw.on('drawend', () => {
@@ -241,13 +224,18 @@ class ImageEditor extends React.Component {
 
       let geom;
       if(this.sketchFeature) { geom = this.sketchFeature.getGeometry(); }
+
+      /*
       this.props.dispatch(finishedDrawing({
         type: SCALE, geometry: geom, properties: { worldLength },
       }));
+      */
 
-      if(geom) {
+      if(geom && this.props.onAddScale) {
         let coords = geom.getCoordinates();
-        this.props.dispatch(addScale(coords[0], coords[1], worldLength));
+        this.props.onAddScale({
+          startPoint: coords[0], endPoint: coords[1], length: worldLength
+        });
       }
 
       this.map.removeInteraction(this.draw);
@@ -256,12 +244,13 @@ class ImageEditor extends React.Component {
     });
 
     this.map.addInteraction(this.draw);
+
+    /*
     this.props.dispatch(startedDrawing({
       type: SCALE, geometry: null, properties: { worldLength },
     }));
+    */
   }
 }
-
-ImageEditor = connect(filterState)(ImageEditor);
 
 export default ImageEditor;

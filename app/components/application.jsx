@@ -2,7 +2,8 @@ import React from 'react';
 import { connect } from 'react-redux'
 
 import {
-  selectRecord, cancelSelectRecord, fetchRecordIfNeeded
+  selectRecord, cancelSelectRecord, fetchRecordIfNeeded, addScale,
+  finishedDrawing,
 } from '../actions.js';
 
 import { imageUrlFromRecord } from '../pas-api.js';
@@ -39,7 +40,7 @@ export default connect(filterState)(React.createClass({
   render: function() {
     const {
       dispatch, showSelectRecordModal, recordsById, selectedRecordId,
-      options
+      options, features, currentlyDrawing
     } = this.props;
 
     let currentRecord, currentRecordIsFetching, imageSrc;
@@ -49,10 +50,17 @@ export default connect(filterState)(React.createClass({
       imageSrc = imageUrlFromRecord(currentRecord);
     }
 
+    function onAddScale(s) {
+      dispatch(finishedDrawing());
+      dispatch(addScale(s.startPoint, s.endPoint, s.length));
+    }
+
     return (
       <div className="application">
         <div className="application-image">
-          <ImageEditor lengthUnit={options.lengthUnit} imageSrc={imageSrc} />
+          <ImageEditor lengthUnit={options.lengthUnit} imageSrc={imageSrc}
+                       features={features} currentlyDrawing={currentlyDrawing}
+                       onAddScale={onAddScale} />
         </div>
         <div className="application-sidebar">
           <Sidebar record={currentRecord} />
