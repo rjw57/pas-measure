@@ -29,6 +29,7 @@ let ScaleList = props => (
           <td width="*">{ formatScalePixelLength(scale) } px</td>
           <td width="*">
             { formatLength(scale.length, props.unit) }
+            { ' ' }
             { props.unit.shortName }
           </td>
         </tr>
