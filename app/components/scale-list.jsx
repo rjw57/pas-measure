@@ -15,21 +15,21 @@ function formatScalePixelLength(scale) {
 let ScaleList = props => (
   <table className="scale-list table table-striped table-hover table-condensed">
     <thead>
-      <tr><th>Image</th><th>World</th></tr>
+      <tr><th></th><th>Image</th><th>World</th></tr>
     </thead>
     <tbody>
       {props.scales.map(scale => (
         <tr key={scale.id}>
-          <td>{ formatScalePixelLength(scale) } px</td>
-          <td>
-            { formatLength(scale.length, props.unit) }
-            { props.unit.shortName }
-          </td>
-          <td className="text-right">
+          <td width="0" className="text-center">
             <Button bsSize="xsmall" bsStyle="danger"
                 onClick={props.onDelete ? () => props.onDelete(scale.id) : null}>
               <Glyphicon glyph="trash" />
             </Button>
+          </td>
+          <td width="*">{ formatScalePixelLength(scale) } px</td>
+          <td width="*">
+            { formatLength(scale.length, props.unit) }
+            { props.unit.shortName }
           </td>
         </tr>
       ))}

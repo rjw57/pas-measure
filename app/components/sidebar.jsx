@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Input } from 'react-bootstrap';
+import { Button, Input, Glyphicon } from 'react-bootstrap';
 import { connect } from 'react-redux'
 
 import { startDrawingScale, setLengthUnit, removeScale } from '../actions.js';
@@ -56,10 +56,17 @@ class LengthInput extends React.Component {
   }
 
   render() {
+    let addButton = (
+      <Button onClick={this.props.onAdd} disabled={this.props.addDisabled}>
+        { /* <small> because Glyphicon is a little too large for addon button */ }
+        <small><Glyphicon glyph="plus" /></small>
+      </Button>
+    );
     return (
       <Input ref="input" type="number" placeholder="1.23" step="0.1"
              value={this.state.inputValue} onInput={(e) => this.handleInput(e)}
-             addonAfter={this.props.unit.shortName} />
+             addonAfter={this.props.unit.shortName}
+             buttonBefore={addButton} />
     );
   }
 }
@@ -98,11 +105,9 @@ class Sidebar extends React.Component {
               : null
           }
           <LengthInput unit={options.lengthUnit}
-                       onInput={l => this.setState({ scaleLength: l })}/>
-          <Button block disabled={addScaleDisabled}
-                  onClick={() => this.handleAddScaleClick()}>
-            Add scale
-          </Button>
+                       onInput={l => this.setState({ scaleLength: l })}
+                       onAdd={() => this.handleAddScaleClick()}
+                       addDisabled={addScaleDisabled} />
         </SidebarSection>
       </div>
     );
