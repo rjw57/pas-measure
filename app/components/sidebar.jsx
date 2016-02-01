@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, Input } from 'react-bootstrap';
 import { connect } from 'react-redux'
 
-import { startDrawing, SCALE, setLengthUnit, removeScale } from '../actions.js';
+import { startDrawingScale, setLengthUnit, removeScale } from '../actions.js';
 
 import { formatLength } from '../utils.js';
 
@@ -71,9 +71,7 @@ class Sidebar extends React.Component {
   }
 
   handleAddScaleClick() {
-    this.props.dispatch(startDrawing(SCALE, {
-      worldLength: this.state.scaleLength
-    }));
+    this.props.dispatch(startDrawingScale(this.state.scaleLength));
   }
 
   handleDeleteScale(scaleId) {
