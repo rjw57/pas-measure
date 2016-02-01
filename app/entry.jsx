@@ -1,10 +1,5 @@
 import React from 'react';
 
-/*
-require('style!css!./style.css');
-require('./app.jsx');
-*/
-
 // Redux store.
 import { createStore, applyMiddleware, compose } from 'redux';
 import thunkMiddleware from 'redux-thunk'
