@@ -109,6 +109,16 @@ class Sidebar extends React.Component {
                        onAdd={() => this.handleAddScaleClick()}
                        addDisabled={addScaleDisabled} />
         </SidebarSection>
+        <SidebarSection title="Lines">
+          <Button block>
+            <Glyphicon glyph="plus" /> Add line
+          </Button>
+        </SidebarSection>
+        <SidebarSection title="Circles">
+          <Button block>
+            <Glyphicon glyph="plus" /> Add circle
+          </Button>
+        </SidebarSection>
       </div>
     );
   }
