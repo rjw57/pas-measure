@@ -1,4 +1,4 @@
-SRCDIR:=app
+SRCDIR:=src
 BUILDDIR:=build
 
 STATICFILES:= \
