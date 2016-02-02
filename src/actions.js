@@ -20,3 +20,15 @@ export let startDrawingScale = length => ({
 });
 export let stopDrawingScale = () => ({ type: STOP_DRAWING_SCALE });
 
+// Drawing lines
+export const START_DRAWING_LINE = 'START_DRAWING_LINE';
+export const STOP_DRAWING_LINE = 'STOP_DRAWING_LINE';
+export let startDrawingLine = () => ({ type: START_DRAWING_LINE });
+export let stopDrawingLine = () => ({ type: STOP_DRAWING_LINE });
+
+// Drawing circles
+export const START_DRAWING_CIRCLE = 'START_DRAWING_CIRCLE';
+export const STOP_DRAWING_CIRCLE = 'STOP_DRAWING_CIRCLE';
+export let startDrawingCircle = () => ({ type: START_DRAWING_CIRCLE });
+export let stopDrawingCircle = () => ({ type: STOP_DRAWING_CIRCLE });
+

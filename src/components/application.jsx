@@ -3,10 +3,12 @@ import { connect } from 'react-redux'
 
 import {
   selectRecord, cancelSelectRecord, fetchRecordIfNeeded,
-  addScale, stopDrawingScale
+  addScale, stopDrawingScale, stopDrawingLine, stopDrawingCircle
 } from '../actions.js';
 
-import { DRAWING_SCALE } from '../reducers/interaction.js';
+import {
+  DRAWING_SCALE, DRAWING_LINE, DRAWING_CIRCLE
+} from '../reducers/interaction.js';
 
 import { imageUrlFromRecord } from '../pas-api.js';
 import ImageEditor from './image-editor.jsx'
@@ -74,10 +76,18 @@ export default connect(filterState)(React.createClass({
     }
 
     function onAddScale(s) {
-      if(interaction.state === DRAWING_SCALE) {
-        dispatch(stopDrawingScale());
-      }
+      if(interaction.state === DRAWING_SCALE) { dispatch(stopDrawingScale()); }
       dispatch(addScale(s.startPoint, s.endPoint, s.length));
+    }
+
+    function onAddLine(s) {
+      if(interaction.state === DRAWING_LINE) { dispatch(stopDrawingLine()); }
+      // dispatch(addLine(s.startPoint, s.endPoint));
+    }
+
+    function onAddCircle(s) {
+      if(interaction.state === DRAWING_CIRCLE) { dispatch(stopDrawingCircle()); }
+      // dispatch(addCircle(s.startPoint, s.endPoint));
     }
 
     let nextScaleLength;
@@ -95,6 +105,10 @@ export default connect(filterState)(React.createClass({
                        isDrawingScale={interaction.state === DRAWING_SCALE}
                        nextScaleLength={nextScaleLength}
                        onAddScale={onAddScale}
+                       isDrawingLine={interaction.state === DRAWING_LINE}
+                       onAddLine={onAddLine}
+                       isDrawingCircle={interaction.state === DRAWING_CIRCLE}
+                       onAddCircle={onAddCircle}
                        pixelLengthMean={pixelLengthMean}
                        pixelLengthStdDev={pixelLengthStdDev}
                        />

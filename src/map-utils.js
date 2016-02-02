@@ -1,6 +1,7 @@
 import { formatLength } from './utils.js';
 const defaultOuterColor = 'rgba(51, 51, 51, 0.5)';
 const defaultInnerColor = '#ffffff';
+const defaultFillColor = 'rgba(255, 255, 255, 0.2)';
 const defaultPerpPixLen = 20;
 
 // Construct style function for a linear measurement.
@@ -80,6 +81,89 @@ export function linearMeasurementStyle(options) {
               text: label,
               rotation: Math.atan2(-sense * dy, Math.abs(dx)),
               offsetX: 0, offsetY: 0,
+              font: '15px sans-serif',
+              fill: new ol.style.Fill({ color: options.innerColor }),
+              stroke: new ol.style.Stroke({
+                color: options.outerColor, width: 2 }),
+            }),
+          }),
+        ]);
+      });
+    }
+
+    return styles;
+  };
+}
+
+export function circularMeasurementStyle(options) {
+  options = Object.assign({
+    innerColor: defaultInnerColor,
+    outerColor: defaultOuterColor,
+    fillColor: defaultFillColor,
+  }, options);
+
+  return (feature, resolution) => {
+    // resolution is "projection units per pixel"
+
+    let innerStrokeStyle = new ol.style.Stroke({
+      color: options.innerColor, width: 2 });
+    let outerStrokeStyle = new ol.style.Stroke({
+      color: options.outerColor, width: 4 });
+    let fillStyle = new ol.style.Fill({ color: options.fillColor });
+
+    let styles = [ ];
+
+    let geometry = feature.getGeometry();
+    let label = '';
+
+    if(geometry.getType() === 'LineString') {
+      geometry.forEachSegment((start, end) => {
+        let dx = end[0] - start[0], dy = end[1] - start[1];
+        let sense = dx > 0 ? 1 : -1;
+
+        let len = Math.sqrt(dx*dx + dy*dy);
+        let cx = 0.5 * (end[0] + start[0]), cy = 0.5 * (end[1] + start[1]);
+
+        let circleCentre = new ol.geom.Point([cx, cy]);
+        let diameterGeom = new ol.geom.LineString([
+          [ cx - 0.5*len, cy ], [ cx + 0.5*len, cy ]
+        ]);
+
+        styles = styles.concat([
+          new ol.style.Style({
+            geometry: circleCentre,
+            image: new ol.style.Circle({
+              radius: 0.5 * len / resolution,
+              stroke: outerStrokeStyle,
+            }),
+            zIndex: 90,
+          }),
+          new ol.style.Style({
+            geometry: circleCentre,
+            image: new ol.style.Circle({
+              radius: 0.5 * len / resolution,
+              stroke: innerStrokeStyle,
+              fill: fillStyle,
+            }),
+            zIndex: 100,
+          }),
+          new ol.style.Style({
+            geometry: diameterGeom,
+            stroke: outerStrokeStyle,
+            zIndex: 90,
+          }),
+          new ol.style.Style({
+            geometry: diameterGeom,
+            stroke: innerStrokeStyle,
+            zIndex: 100,
+          }),
+          new ol.style.Style({
+            geometry: new ol.geom.Point([
+                0.5 * (end[0] + start[0]),
+                0.5 * (end[1] + start[1]),
+            ]),
+            text: new ol.style.Text({
+              text: label,
               font: '15px sans-serif',
               fill: new ol.style.Fill({ color: options.innerColor }),
               stroke: new ol.style.Stroke({

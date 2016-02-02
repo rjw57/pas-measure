@@ -3,7 +3,7 @@ import { Button, Input, Glyphicon } from 'react-bootstrap';
 import { connect } from 'react-redux'
 
 import {
-  startDrawingScale,
+  startDrawingScale, startDrawingLine, startDrawingCircle,
   setLengthUnit, removeScale
 } from '../actions.js';
 
@@ -113,12 +113,12 @@ class Sidebar extends React.Component {
                        addDisabled={addScaleDisabled} />
         </SidebarSection>
         <SidebarSection title="Lines">
-          <Button block>
+          <Button block onClick={() => dispatch(startDrawingLine())}>
             <Glyphicon glyph="plus" /> Add line
           </Button>
         </SidebarSection>
         <SidebarSection title="Circles">
-          <Button block>
+          <Button block onClick={() => dispatch(startDrawingCircle())}>
             <Glyphicon glyph="plus" /> Add circle
           </Button>
         </SidebarSection>

@@ -4,14 +4,51 @@ import ol from 'openlayers';
 
 import { formatLength } from '../utils.js';
 import {
-  linearMeasurementStyle, createNeutralBackgroundSource
+  createNeutralBackgroundSource,
+  linearMeasurementStyle, circularMeasurementStyle
 } from '../map-utils.js';
 
 require('style!css!./image-editor.css');
 
-const scaleStyleOpts = {
-  innerColor: '#ffcc33',
+const scaleStyleOpts = { innerColor: '#ffcc33' };
+const circleStyleOpts = {
+  innerColor: '#A621A6', fillColor: 'rgba(166,33,166,0.2)'
 };
+const lineStyleOpts = { innerColor: '#42BF89' };
+
+// updateSourceFromFeatures will take a collection of feature objects, each with
+// an associated id, and add or remove features from a source depending on
+// whether a feature with a matching id is present. The createFeature callback
+// is called on the feature object to create the corresponding ol.Feature.
+function updateSourceFromFeatures(source, nextFeatures, createFeature) {
+  // Form a set of current feature ids and next feature ids.
+  let featureIds = new Set(source.getFeatures().map(f => f.getId()));
+  let nextFeatureIds = new Set(nextFeatures.map(f => f.id));
+
+  // Set of feature ids which have been inserted
+  let insertedFeatureIds = new Set(
+    [...nextFeatureIds].filter(id => !featureIds.has(id)));
+
+  // Set of feature ids which have been deleted
+  let removedFeatureIds = new Set(
+    [...featureIds].filter(id => !nextFeatureIds.has(id)));
+
+  // Remove any features we need to
+  removedFeatureIds.forEach(id => {
+    let f = source.getFeatureById(id);
+    if(f) { source.removeFeature(f); }
+  });
+
+  // Now insert any new features
+  if(insertedFeatureIds.size > 0) {
+    nextFeatures.forEach(f => {
+      if(!insertedFeatureIds.has(f.id)) { return; }
+      let newFeature = createFeature(f);
+      newFeature.setId(f.id);
+      source.addFeature(newFeature);
+    });
+  }
+}
 
 // ImageEditor is a React component which provides a canvas which displays an
 // image and a set of features. It also supports the creation of new features
@@ -108,37 +145,28 @@ class ImageEditor extends React.Component {
       this.startDrawingScale(nextProps.nextScaleLength);
     }
 
-    ////// Scale features //////
-
-    // Form a set of current scale ids and next scale ids.
-    let scaleIds = new Set(this.props.scales.map(s => s.id));
-    let nextScaleIds = new Set(nextProps.scales.map(s => s.id));
-
-    // Set of scale ids which have been inserted
-    let insertedScaleIds = new Set(
-      [...nextScaleIds].filter(id => !scaleIds.has(id)));
-
-    // Set of scale ids which have been deleted
-    let removedScaleIds = new Set(
-      [...scaleIds].filter(id => !nextScaleIds.has(id)));
-
-    // Remove any scales we need to
-    removedScaleIds.forEach(id => {
-      let f = this.scaleSource.getFeatureById(id);
-      if(f) { this.scaleSource.removeFeature(f); }
-    });
-
-    // Now insert any new scales
-    if(insertedScaleIds.size > 0) {
-      nextProps.scales.forEach(s => {
-        if(!insertedScaleIds.has(s.id)) { return; }
-        let geometry = new ol.geom.LineString([s.startPoint, s.endPoint]);
-        let f = new ol.Feature(geometry);
-        f.length = s.length;
-        f.setId(s.id);
-        this.scaleSource.addFeature(f);
-      });
+    // Drawing lines
+    if(nextProps.isDrawingLine !== this.props.isDrawingLine) {
+      // We've changed what we're drawing so come what may, we need to
+      // remove any current drawing.
+      this.removeCurrentDrawing();
+      this.startDrawingLine(nextProps.nextLineLength);
     }
+
+    // Drawing circles
+    if(nextProps.isDrawingCircle !== this.props.isDrawingCircle) {
+      // We've changed what we're drawing so come what may, we need to
+      // remove any current drawing.
+      this.removeCurrentDrawing();
+      this.startDrawingCircle(nextProps.nextCircleLength);
+    }
+
+    updateSourceFromFeatures(this.scaleSource, nextProps.scales, s => {
+      let geometry = new ol.geom.LineString([s.startPoint, s.endPoint]);
+      let f = new ol.Feature(geometry);
+      f.length = s.length;
+      return f;
+    });
   }
 
   // Set a new image URL
@@ -150,9 +178,7 @@ class ImageEditor extends React.Component {
   }
 
   render() {
-    return (
-      <div className="image-editor-map" ref="map" />
-    );
+    return (<div className="image-editor-map" ref="map" />);
   }
 
   removeCurrentDrawing() {
@@ -162,7 +188,7 @@ class ImageEditor extends React.Component {
     }
   }
 
-  startDrawingScale(worldLength) {
+  startDrawingScale(length) {
     // NOP if there's no map
     if(!this.map) { return; }
     this.removeCurrentDrawing();
@@ -207,7 +233,7 @@ class ImageEditor extends React.Component {
     let sketchFeature;
     this.draw.on('drawstart', (event) => {
       sketchFeature = event.feature;
-      sketchFeature.length = worldLength;
+      sketchFeature.length = length;
     });
 
     this.draw.on('drawend', () => {
@@ -219,8 +245,136 @@ class ImageEditor extends React.Component {
       if(geom && this.props.onAddScale) {
         let coords = geom.getCoordinates();
         this.props.onAddScale({
-          startPoint: coords[0], endPoint: coords[1], length: worldLength
+          startPoint: coords[0], endPoint: coords[1], length
         });
+      }
+
+      this.map.removeInteraction(this.draw);
+      this.draw = null;
+    });
+
+    this.map.addInteraction(this.draw);
+  }
+
+  startDrawingLine() {
+    // NOP if there's no map
+    if(!this.map) { return; }
+    this.removeCurrentDrawing();
+
+    let pointerStyles = [
+      new ol.style.Style({
+        image: new ol.style.Circle({
+          radius: 10,
+          stroke: new ol.style.Stroke({
+            color: 'rgba(0, 0, 0, 0.7)'
+          }),
+          fill: new ol.style.Fill({
+            color: 'rgba(255, 255, 255, 0.2)'
+          })
+        }),
+        text: new ol.style.Text({
+          text: 'foo',
+        }),
+      }),
+    ];
+
+    // Create a new drawing
+    let style = linearMeasurementStyle(lineStyleOpts);
+    this.draw = new ol.interaction.Draw({
+      // source: source,
+      type: 'LineString',
+      minPoints: 2, maxPoints: 2,
+      style: (f, r) => {
+        let geometry = f.getGeometry();
+
+        if(geometry.getType() == 'LineString') {
+          return style(f,r);
+        }
+
+        if(geometry.getType() == 'Point') {
+          return pointerStyles;
+        }
+
+        return new ol.style.Style();
+      },
+    });
+
+    let sketchFeature;
+    this.draw.on('drawstart', (event) => { sketchFeature = event.feature; });
+
+    this.draw.on('drawend', () => {
+      if(!this.map) { return; }
+
+      let geom;
+      if(sketchFeature) { geom = sketchFeature.getGeometry(); }
+
+      if(geom && this.props.onAddLine) {
+        let coords = geom.getCoordinates();
+        this.props.onAddLine({ startPoint: coords[0], endPoint: coords[1] });
+      }
+
+      this.map.removeInteraction(this.draw);
+      this.draw = null;
+    });
+
+    this.map.addInteraction(this.draw);
+  }
+
+  startDrawingCircle() {
+    // NOP if there's no map
+    if(!this.map) { return; }
+    this.removeCurrentDrawing();
+
+    let pointerStyles = [
+      new ol.style.Style({
+        image: new ol.style.Circle({
+          radius: 10,
+          stroke: new ol.style.Stroke({
+            color: 'rgba(0, 0, 0, 0.7)'
+          }),
+          fill: new ol.style.Fill({
+            color: 'rgba(255, 255, 255, 0.2)'
+          })
+        }),
+        text: new ol.style.Text({
+          text: 'foo',
+        }),
+      }),
+    ];
+
+    // Create a new drawing
+    let style = circularMeasurementStyle(circleStyleOpts);
+    this.draw = new ol.interaction.Draw({
+      // source: source,
+      type: 'LineString',
+      minPoints: 2, maxPoints: 2,
+      style: (f, r) => {
+        let geometry = f.getGeometry();
+
+        if(geometry.getType() == 'LineString') {
+          return style(f,r);
+        }
+
+        if(geometry.getType() == 'Point') {
+          return pointerStyles;
+        }
+
+        return new ol.style.Style();
+      },
+    });
+
+    let sketchFeature;
+    this.draw.on('drawstart', (event) => { sketchFeature = event.feature; });
+
+    this.draw.on('drawend', () => {
+      if(!this.map) { return; }
+
+      let geom;
+      if(sketchFeature) { geom = sketchFeature.getGeometry(); }
+
+      if(geom && this.props.onAddCircle) {
+        let coords = geom.getCoordinates();
+        this.props.onAddCircle({ startPoint: coords[0], endPoint: coords[1] });
       }
 
       this.map.removeInteraction(this.draw);
