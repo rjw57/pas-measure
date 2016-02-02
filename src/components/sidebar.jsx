@@ -4,7 +4,6 @@ import { connect } from 'react-redux'
 
 import {
   startDrawingScale,
-  startDrawingLine,
   setLengthUnit, removeScale
 } from '../actions.js';
 
@@ -25,8 +24,8 @@ let SidebarSection = (props) => (
 );
 
 function filterState(state) {
-  let { options, features } = state;
-  return { options, features };
+  let { lengthUnit, features } = state;
+  return { lengthUnit, features };
 }
 
 class LengthInput extends React.Component {
@@ -90,31 +89,31 @@ class Sidebar extends React.Component {
   }
 
   render() {
-    let { dispatch, options, features } = this.props;
+    let { dispatch, lengthUnit, features } = this.props;
     let addScaleDisabled = !this.props.record ||
       (this.state.scaleLength === null);
     return (
       <div className="sidebar container-fluid">
         <SidebarSection title="Options">
           <Options
-            lengthUnit={options.lengthUnit}
+            lengthUnit={lengthUnit}
             onLengthUnitSelected={unit => dispatch(setLengthUnit(unit))}
           />
         </SidebarSection>
         <SidebarSection title="Scales">
           {
             features.scales.length > 0 ?
-              <ScaleList scales={features.scales} unit={options.lengthUnit}
+              <ScaleList scales={features.scales} unit={lengthUnit}
                          onDelete={s => this.handleDeleteScale(s)} />
               : null
           }
-          <LengthInput unit={options.lengthUnit}
+          <LengthInput unit={lengthUnit}
                        onInput={l => this.setState({ scaleLength: l })}
                        onAdd={() => this.handleAddScaleClick()}
                        addDisabled={addScaleDisabled} />
         </SidebarSection>
         <SidebarSection title="Lines">
-          <Button block onClick={() => dispatch(startDrawingLine())}>
+          <Button block>
             <Glyphicon glyph="plus" /> Add line
           </Button>
         </SidebarSection>

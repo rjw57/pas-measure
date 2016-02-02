@@ -6,6 +6,8 @@ import {
   addScale, stopDrawingScale
 } from '../actions.js';
 
+import { DRAWING_SCALE } from '../reducers.js';
+
 import { imageUrlFromRecord } from '../pas-api.js';
 import ImageEditor from './image-editor.jsx'
 import SelectRecordModal from './select-record-modal.jsx';
@@ -40,7 +42,7 @@ export default connect(filterState)(React.createClass({
   render: function() {
     const {
       dispatch, showSelectRecordModal, recordsById, selectedRecordId,
-      options, features, interactions,
+      lengthUnit, features, interaction,
     } = this.props;
 
     let pixelLengthMean = 0, pixelLengthSqMean = 0, pixelLengthVariance = 0;
@@ -71,22 +73,27 @@ export default connect(filterState)(React.createClass({
       imageSrc = imageUrlFromRecord(currentRecord);
     }
 
-    let scaleInt = interactions.scale;
-
     function onAddScale(s) {
-      if(scaleInt && scaleInt.isDrawing) {
+      if(interaction.state === DRAWING_SCALE) {
         dispatch(stopDrawingScale());
       }
       dispatch(addScale(s.startPoint, s.endPoint, s.length));
     }
 
+    let nextScaleLength;
+    switch(interaction.state) {
+      case DRAWING_SCALE:
+        nextScaleLength = interaction.options.length;
+        break;
+    }
+
     return (
       <div className="application">
         <div className="application-image">
-          <ImageEditor lengthUnit={options.lengthUnit} imageSrc={imageSrc}
+          <ImageEditor lengthUnit={lengthUnit} imageSrc={imageSrc}
                        features={features}
-                       isDrawingScale={scaleInt ? scaleInt.isDrawing : false}
-                       nextScaleLength={scaleInt ? scaleInt.length : null}
+                       isDrawingScale={interaction.state === DRAWING_SCALE}
+                       nextScaleLength={nextScaleLength}
                        onAddScale={onAddScale}
                        pixelLengthMean={pixelLengthMean}
                        pixelLengthStdDev={pixelLengthStdDev}

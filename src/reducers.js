@@ -61,47 +61,33 @@ function lines(state = [], action) {
 
 const features = combineReducers({ scales, lines });
 
-const options = combineReducers({ lengthUnit });
+// interaction states
+export let NEUTRAL = 'NEUTRAL';
+export let DRAWING_SCALE = 'DRAWING_SCALE';
 
-const initialScaleInteractionState = { isDrawing: false, length: null };
+const initialInteractionState = {
+  state: NEUTRAL, options: null
+};
 
-function scaleInteraction(state = initialScaleInteractionState, action) {
+function interaction(state = initialInteractionState, action) {
   switch(action.type) {
     case START_DRAWING_SCALE:
       let { length } = action.payload;
-      return Object.assign({}, state, { isDrawing: true, length });
+      return { state: DRAWING_SCALE, options: { length } }
     case STOP_DRAWING_SCALE:
-      return Object.assign({}, state, { isDrawing: false, length: null });
+      return initialInteractionState;
     default:
       return state;
   }
 }
-
-const initialLineInteractionState = { isDrawing: false };
-
-function lineInteraction(state = initialLineInteractionState, action) {
-  switch(action.type) {
-    case START_DRAWING_LINE:
-      return Object.assign({}, state, { isDrawing: true });
-    case STOP_DRAWING_LINE:
-      return Object.assign({}, state, { isDrawing: false });
-    default:
-      return state;
-  }
-}
-
-const interactions = combineReducers({
-  scale: scaleInteraction,
-  line: lineInteraction,
-});
 
 const app = combineReducers({
   selectedRecordId,
   recordsById,
   showSelectRecordModal,
-  interactions,
+  interaction,
   features,
-  options,
+  lengthUnit,
 });
 
 export default app;
