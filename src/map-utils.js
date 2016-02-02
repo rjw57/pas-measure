@@ -91,15 +91,19 @@ export function linearMeasurementStyle(options) {
   };
 }
 
+// Much like linearMeasurementStyle but has two labels.
 export function circularMeasurementStyle(options) {
   options = Object.assign({
     innerColor: defaultInnerColor,
     outerColor: defaultOuterColor,
     fillColor: defaultFillColor,
+    aboveLabelFunc: () => '',
+    belowLabelFunc: () => '',
   }, options);
 
   return (feature, resolution) => {
     // resolution is "projection units per pixel"
+    let perpPixLen = defaultPerpPixLen, perpLen = resolution * perpPixLen;
 
     let innerStrokeStyle = new ol.style.Stroke({
       color: options.innerColor, width: 2 });
@@ -154,12 +158,19 @@ export function circularMeasurementStyle(options) {
             zIndex: 100,
           }),
           new ol.style.Style({
-            geometry: new ol.geom.Point([
-                0.5 * (end[0] + start[0]),
-                0.5 * (end[1] + start[1]),
-            ]),
+            geometry: new ol.geom.Point([cx, cy + 0.5 * perpLen]),
             text: new ol.style.Text({
-              text: label,
+              text: options.aboveLabelFunc(feature, start, end),
+              font: '15px sans-serif',
+              fill: new ol.style.Fill({ color: options.innerColor }),
+              stroke: new ol.style.Stroke({
+                color: options.outerColor, width: 2 }),
+            }),
+          }),
+          new ol.style.Style({
+            geometry: new ol.geom.Point([cx, cy - 0.5 * perpLen]),
+            text: new ol.style.Text({
+              text: options.belowLabelFunc(feature, start, end),
               font: '15px sans-serif',
               fill: new ol.style.Fill({ color: options.innerColor }),
               stroke: new ol.style.Stroke({

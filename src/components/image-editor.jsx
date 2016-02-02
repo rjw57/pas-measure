@@ -12,13 +12,21 @@ require('style!css!./image-editor.css');
 
 const scaleStyleOpts = { innerColor: '#ffcc33' };
 const circleStyleOpts = {
-  innerColor: '#A621A6', fillColor: 'rgba(166,33,166,0.2)'
+  innerColor: '#A621A6',
+  //fillColor: 'rgba(210,144,210,0.5)'
 };
 const lineStyleOpts = { innerColor: '#42BF89' };
 
 function measureLength(lengthInPixels, pixelLengthEstimate) {
   let mu = lengthInPixels * pixelLengthEstimate.mu;
   let sigma = lengthInPixels * pixelLengthEstimate.sigma;
+  return { mu, sigma };
+}
+
+function measureArea(areaInSqPixels, pixelLengthEstimate) {
+  let mu = Math.pow(pixelLengthEstimate.mu, 2) * areaInSqPixels;
+  let sigma = Math.sqrt(2) * pixelLengthEstimate.sigma / pixelLengthEstimate.mu;
+  sigma *= mu;
   return { mu, sigma };
 }
 
@@ -210,26 +218,63 @@ class ImageEditor extends React.Component {
       })
     ));
 
+    let lengthMeasureLabelFunc = (feature, s, e) => {
+      if(!this.props.pixelLengthEstimate.mu) {
+        return '';
+      }
+      let dx = e[0] - s[0], dy = e[1] - s[1];
+      let len = Math.sqrt(dx*dx + dy*dy);
+      let measure = measureLength(len, this.props.pixelLengthEstimate);
+
+      // is the error > 0.01 length units?
+      if(measure.sigma > 0.01 * this.props.lengthUnit.length) {
+        return formatLength(measure.mu, this.props.lengthUnit) +
+          ' \u00b1 ' + formatLength(measure.sigma, this.props.lengthUnit) +
+          ' ' + this.props.lengthUnit.shortName;
+      } else {
+        return formatLength(measure.mu, this.props.lengthUnit) +
+          ' ' + this.props.lengthUnit.shortName;
+      }
+    };
+
+    let circleAreaLabelFunc = (feature, s, e) => {
+      if(!this.props.pixelLengthEstimate.mu) {
+        return '';
+      }
+      let dx = e[0] - s[0], dy = e[1] - s[1];
+      let len = Math.sqrt(dx*dx + dy*dy);
+      let area = Math.PI * Math.pow(0.5*len, 2);
+      let measure = measureArea(area, this.props.pixelLengthEstimate);
+
+      let { lengthUnit } = this.props;
+      let areaUnit = {
+        id: lengthUnit.id + '_AREA', length: Math.pow(lengthUnit.length, 2),
+        shortName: lengthUnit.shortName + '\u00b2'
+      };
+
+      // is the error > 0.01 length units?
+      if(measure.sigma > 0.01 * areaUnit.length) {
+        return formatLength(measure.mu, areaUnit) +
+          ' \u00b1 ' + formatLength(measure.sigma, areaUnit) +
+          ' ' + areaUnit.shortName;
+      } else {
+        return formatLength(measure.mu, areaUnit) + ' ' + areaUnit.shortName;
+      }
+    };
+
     this.lineLayer.setStyle(linearMeasurementStyle(
       Object.assign({}, lineStyleOpts, {
         lengthUnit: lengthUnit,
-        labelFunc: (feature, s, e) => {
-          if(!this.props.pixelLengthEstimate.mu) {
-            return '';
-          }
-          let dx = e[0] - s[0], dy = e[1] - s[1];
-          let len = Math.sqrt(dx*dx + dy*dy);
-          let measure = measureLength(len, this.props.pixelLengthEstimate);
-
-          return formatLength(measure.mu, this.props.lengthUnit) +
-            ' \u00b1 ' + formatLength(measure.sigma, this.props.lengthUnit) +
-            ' ' + this.props.lengthUnit.shortName;
-          return props.pixelLengthEstimate.mu;
-        },
+        labelFunc: lengthMeasureLabelFunc,
       })
     ));
 
-    this.circleLayer.setStyle(circularMeasurementStyle(circleStyleOpts));
+    this.circleLayer.setStyle(circularMeasurementStyle(
+      Object.assign({}, circleStyleOpts, {
+        aboveLabelFunc: lengthMeasureLabelFunc,
+        belowLabelFunc: circleAreaLabelFunc,
+      })
+    ));
   }
 
   // Set a new image URL
