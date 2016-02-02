@@ -1,9 +1,7 @@
 import React from 'react';
 import { Button, ButtonGroup } from 'react-bootstrap';
 
-import { LENGTH_UNITS } from '../actions.js';
-
-let UnitSelector = props => {
+export let UnitSelector = props => {
   let onUnitSelected = props.onUnitSelected ? props.onUnitSelected : () => null;
   return (
     <ButtonGroup justified>
@@ -19,13 +17,3 @@ let UnitSelector = props => {
     </ButtonGroup>
   );
 }
-
-let Options = props => (
-  <div>
-    <UnitSelector units={LENGTH_UNITS}
-                  selectedUnitId={props.lengthUnit.id}
-                  onUnitSelected={props.onLengthUnitSelected} />
-  </div>
-);
-
-export default Options;

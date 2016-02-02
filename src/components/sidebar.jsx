@@ -4,13 +4,15 @@ import { connect } from 'react-redux'
 
 import {
   startDrawingScale, startDrawingLine, startDrawingCircle,
-  setLengthUnit, removeScale
+  setLengthUnit, LENGTH_UNITS,
+  removeScale,
+  requestSelectRecord
 } from '../actions.js';
 
 import { formatLength } from '../utils.js';
 
 import ScaleList from './scale-list.jsx';
-import Options from './options.jsx';
+import { UnitSelector } from './options.jsx';
 
 let SidebarSection = (props) => (
   <div className="sidebar-section">
@@ -95,10 +97,15 @@ class Sidebar extends React.Component {
     return (
       <div className="sidebar container-fluid">
         <SidebarSection title="Options">
-          <Options
-            lengthUnit={lengthUnit}
-            onLengthUnitSelected={unit => dispatch(setLengthUnit(unit))}
-          />
+          <p>
+            <Button block onClick={() => dispatch(requestSelectRecord())}>
+              Change record&hellip;
+            </Button>
+          </p>
+          <UnitSelector units={LENGTH_UNITS}
+                        selectedUnitId={lengthUnit.id}
+                        onUnitSelected={unit => dispatch(setLengthUnit(unit))}
+                        />
         </SidebarSection>
         <SidebarSection title="Scales">
           {
