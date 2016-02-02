@@ -3,7 +3,8 @@ import { connect } from 'react-redux'
 
 import {
   selectRecord, cancelSelectRecord, fetchRecordIfNeeded,
-  addScale, stopDrawingScale, stopDrawingLine, stopDrawingCircle
+  addScale, stopDrawingScale, stopDrawingLine, stopDrawingCircle,
+  addLine
 } from '../actions.js';
 
 import {
@@ -44,7 +45,7 @@ export default connect(filterState)(React.createClass({
   render: function() {
     const {
       dispatch, showSelectRecordModal, recordsById, selectedRecordId,
-      lengthUnit, scales, interaction,
+      lengthUnit, scales, interaction, lines,
     } = this.props;
 
     let pixelLengthMean = 0, pixelLengthSqMean = 0, pixelLengthVariance = 0;
@@ -82,7 +83,7 @@ export default connect(filterState)(React.createClass({
 
     function onAddLine(s) {
       if(interaction.state === DRAWING_LINE) { dispatch(stopDrawingLine()); }
-      // dispatch(addLine(s.startPoint, s.endPoint));
+      dispatch(addLine(s.startPoint, s.endPoint));
     }
 
     function onAddCircle(s) {
@@ -97,11 +98,13 @@ export default connect(filterState)(React.createClass({
         break;
     }
 
+    let pixelLengthEstimate = { mu: pixelLengthMean, sigma: pixelLengthStdDev };
+
     return (
       <div className="application">
         <div className="application-image">
           <ImageEditor lengthUnit={lengthUnit} imageSrc={imageSrc}
-                       scales={scales}
+                       scales={scales} lines={lines}
                        isDrawingScale={interaction.state === DRAWING_SCALE}
                        nextScaleLength={nextScaleLength}
                        onAddScale={onAddScale}
@@ -109,8 +112,7 @@ export default connect(filterState)(React.createClass({
                        onAddLine={onAddLine}
                        isDrawingCircle={interaction.state === DRAWING_CIRCLE}
                        onAddCircle={onAddCircle}
-                       pixelLengthMean={pixelLengthMean}
-                       pixelLengthStdDev={pixelLengthStdDev}
+                       pixelLengthEstimate={pixelLengthEstimate}
                        />
         </div>
         <div className="application-sidebar">

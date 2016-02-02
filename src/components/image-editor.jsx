@@ -16,6 +16,12 @@ const circleStyleOpts = {
 };
 const lineStyleOpts = { innerColor: '#42BF89' };
 
+function measureLength(lengthInPixels, pixelLengthEstimate) {
+  let mu = lengthInPixels * pixelLengthEstimate.mu;
+  let sigma = lengthInPixels * pixelLengthEstimate.sigma;
+  return { mu, sigma };
+}
+
 // updateSourceFromFeatures will take a collection of feature objects, each with
 // an associated id, and add or remove features from a source depending on
 // whether a feature with a matching id is present. The createFeature callback
@@ -77,12 +83,15 @@ class ImageEditor extends React.Component {
 
     // Scales
     this.scaleSource = new ol.source.Vector();
-    this.scaleLayer = new ol.layer.Vector({
-      source: this.scaleSource, zIndex: 100,
-      style: linearMeasurementStyle(
-        Object.assign(scaleStyleOpts, { lengthUnit: this.props.lengthUnit })
-      ),
-    });
+    this.scaleLayer = new ol.layer.Vector({ source: this.scaleSource, zIndex: 100 });
+
+    // Lines
+    this.lineSource = new ol.source.Vector();
+    this.lineLayer = new ol.layer.Vector({ source: this.lineSource, zIndex: 101 });
+
+    // Circles
+    this.circleSource = new ol.source.Vector();
+    this.circleLayer = new ol.layer.Vector({ source: this.circleSource, zIndex: 102 });
 
     // The current draw interaction and sketch feature
     this.draw = null;
@@ -112,6 +121,8 @@ class ImageEditor extends React.Component {
         this.view.fit(extent, this.map.getSize());
       }
     };
+
+    this.updateLayerStyles(this.props.lengthUnit);
   }
 
   componentDidMount() {
@@ -120,7 +131,10 @@ class ImageEditor extends React.Component {
       target: this.refs.map,
       controls: [],
       view: this.view,
-      layers: [ this.bgLayer, this.imageLayer, this.scaleLayer ],
+      layers: [
+        this.bgLayer, this.imageLayer, this.scaleLayer, this.lineLayer,
+        this.circleLayer
+      ],
     });
   }
 
@@ -132,9 +146,14 @@ class ImageEditor extends React.Component {
 
     // Has the length unit changed?
     if(nextProps.lengthUnit.id !== this.props.lengthUnit.id) {
-      this.scaleLayer.setStyle(linearMeasurementStyle(
-        Object.assign(scaleStyleOpts, { lengthUnit: nextProps.lengthUnit })
-      ));
+      this.updateLayerStyles(nextProps.lengthUnit);
+    }
+
+    // Has the length estimate changed?
+    if((nextProps.pixelLengthEstimate.mu !== this.props.pixelLengthEstimate.mu) ||
+        (nextProps.pixelLengthEstimate.sigma !== this.props.pixelLengthEstimate.sigma))
+    {
+      this.updateLayerStyles(nextProps.lengthUnit);
     }
 
     // Drawing scales
@@ -167,6 +186,44 @@ class ImageEditor extends React.Component {
       f.length = s.length;
       return f;
     });
+
+    updateSourceFromFeatures(this.lineSource, nextProps.lines, l => {
+      let geometry = new ol.geom.LineString([l.startPoint, l.endPoint]);
+      let f = new ol.Feature(geometry);
+      return f;
+    });
+  }
+
+  updateLayerStyles(lengthUnit) {
+    this.scaleLayer.setStyle(linearMeasurementStyle(
+      Object.assign({}, scaleStyleOpts, {
+        lengthUnit: lengthUnit,
+        labelFunc: feature => (
+          formatLength(feature.length, lengthUnit) + ' ' + lengthUnit.shortName
+        ),
+      })
+    ));
+
+    this.lineLayer.setStyle(linearMeasurementStyle(
+      Object.assign({}, lineStyleOpts, {
+        lengthUnit: lengthUnit,
+        labelFunc: (feature, s, e) => {
+          if(!this.props.pixelLengthEstimate.mu) {
+            return '';
+          }
+          let dx = e[0] - s[0], dy = e[1] - s[1];
+          let len = Math.sqrt(dx*dx + dy*dy);
+          let measure = measureLength(len, this.props.pixelLengthEstimate);
+
+          return formatLength(measure.mu, this.props.lengthUnit) +
+            ' \u00b1 ' + formatLength(measure.sigma, this.props.lengthUnit) +
+            ' ' + this.props.lengthUnit.shortName;
+          return props.pixelLengthEstimate.mu;
+        },
+      })
+    ));
+
+    this.circleLayer.setStyle(circularMeasurementStyle(circleStyleOpts));
   }
 
   // Set a new image URL
@@ -279,7 +336,6 @@ class ImageEditor extends React.Component {
     ];
 
     // Create a new drawing
-    let style = linearMeasurementStyle(lineStyleOpts);
     this.draw = new ol.interaction.Draw({
       // source: source,
       type: 'LineString',
@@ -288,7 +344,7 @@ class ImageEditor extends React.Component {
         let geometry = f.getGeometry();
 
         if(geometry.getType() == 'LineString') {
-          return style(f,r);
+          return this.lineLayer.getStyle()(f,r);
         }
 
         if(geometry.getType() == 'Point') {
@@ -343,7 +399,6 @@ class ImageEditor extends React.Component {
     ];
 
     // Create a new drawing
-    let style = circularMeasurementStyle(circleStyleOpts);
     this.draw = new ol.interaction.Draw({
       // source: source,
       type: 'LineString',
@@ -352,7 +407,7 @@ class ImageEditor extends React.Component {
         let geometry = f.getGeometry();
 
         if(geometry.getType() == 'LineString') {
-          return style(f,r);
+          return this.circleLayer.getStyle()(f,r);
         }
 
         if(geometry.getType() == 'Point') {

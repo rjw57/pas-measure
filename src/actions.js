@@ -12,6 +12,14 @@ export function addScale(startPoint, endPoint, length) {
 }
 export let removeScale = scaleId => ({ type: REMOVE_SCALE, id: scaleId });
 
+// Adding and removing lines to the current drawing.
+export const ADD_LINE = 'ADD_LINE';
+export const REMOVE_LINE = 'REMOVE_LINE';
+export let addLine = (startPoint, endPoint) => (
+  { type: ADD_LINE, payload: { startPoint, endPoint } }
+);
+export let removeLine = lineId => ({ type: REMOVE_LINE, id: lineId });
+
 // Drawing scales
 export const START_DRAWING_SCALE = 'START_DRAWING_SCALE';
 export const STOP_DRAWING_SCALE = 'STOP_DRAWING_SCALE';

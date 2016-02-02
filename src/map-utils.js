@@ -1,4 +1,3 @@
-import { formatLength } from './utils.js';
 const defaultOuterColor = 'rgba(51, 51, 51, 0.5)';
 const defaultInnerColor = '#ffffff';
 const defaultFillColor = 'rgba(255, 255, 255, 0.2)';
@@ -13,11 +12,13 @@ const defaultPerpPixLen = 20;
 //  innerColor: inner colour of line
 //  outerColor: outer colour of line
 //  lengthUnit: unit used for displaying length
+//  labelFunc: function called with feature, start and end point. Returns label.
 //
 export function linearMeasurementStyle(options) {
   options = Object.assign({
     innerColor: defaultInnerColor,
     outerColor: defaultOuterColor,
+    labelFunc: () => '',
   }, options);
 
   return (feature, resolution) => {
@@ -35,17 +36,12 @@ export function linearMeasurementStyle(options) {
     ];
 
     let geometry = feature.getGeometry();
-    let label = '';
-
-    if(feature.length && options.lengthUnit) {
-      label = formatLength(feature.length, options.lengthUnit) + ' ' +
-        options.lengthUnit.shortName;
-    }
 
     if(geometry.getType() === 'LineString') {
       geometry.forEachSegment((start, end) => {
         let dx = end[0] - start[0], dy = end[1] - start[1];
         let sense = dx > 0 ? 1 : -1;
+        let label = options.labelFunc(feature, start, end);
 
         let len = Math.sqrt(dx*dx + dy*dy);
         let perpDX = perpLen * -dy / len, perpDY = perpLen * dx / len;
