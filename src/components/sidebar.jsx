@@ -5,7 +5,7 @@ import { connect } from 'react-redux'
 import {
   startDrawingScale, startDrawingLine, startDrawingCircle,
   setLengthUnit, LENGTH_UNITS,
-  removeScale,
+  removeScale, removeLine, removeCircle,
   requestSelectRecord
 } from '../actions.js';
 
@@ -14,6 +14,8 @@ import { NEUTRAL } from '../reducers/interaction.js';
 import { formatLength } from '../utils.js';
 
 import ScaleList from './scale-list.jsx';
+import LineList from './line-list.jsx';
+import CircleList from './circle-list.jsx';
 import { UnitSelector } from './options.jsx';
 
 let SidebarSection = (props) => (
@@ -28,8 +30,8 @@ let SidebarSection = (props) => (
 );
 
 function filterState(state) {
-  let { lengthUnit, scales, interaction } = state;
-  return { lengthUnit, scales, interactionState: interaction.state };
+  let { lengthUnit, scales, interaction, lines, circles } = state;
+  return { lengthUnit, scales, lines, circles, interactionState: interaction.state };
 }
 
 class LengthInput extends React.Component {
@@ -92,8 +94,16 @@ class Sidebar extends React.Component {
     this.props.dispatch(removeScale(scaleId));
   }
 
+  handleDeleteLine(lineId) {
+    this.props.dispatch(removeLine(lineId));
+  }
+
+  handleDeleteCircle(circleId) {
+    this.props.dispatch(removeCircle(circleId));
+  }
+
   render() {
-    let { dispatch, lengthUnit, scales } = this.props;
+    let { dispatch, lengthUnit, scales, lines, circles } = this.props;
 
     let isDrawing = this.props.interactionState !== NEUTRAL;
 
@@ -125,12 +135,22 @@ class Sidebar extends React.Component {
                        addDisabled={addScaleDisabled} />
         </SidebarSection>
         <SidebarSection title="Lines">
+          { lines.length > 0 ?
+              <LineList lines={lines} unit={lengthUnit}
+                        onDelete={s => this.handleDeleteLine(s)} />
+              : null
+          }
           <Button block disabled={isDrawing}
                   onClick={() => dispatch(startDrawingLine())}>
             <Glyphicon glyph="plus" /> Add line
           </Button>
         </SidebarSection>
         <SidebarSection title="Circles">
+          { circles.length > 0 ?
+              <CircleList circles={circles} unit={lengthUnit}
+                          onDelete={s => this.handleDeleteCircle(s)} />
+              : null
+          }
           <Button block disabled={isDrawing}
                   onClick={() => dispatch(startDrawingCircle())}>
             <Glyphicon glyph="plus" /> Add circle

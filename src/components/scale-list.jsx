@@ -26,8 +26,8 @@ let ScaleList = props => (
               <Glyphicon glyph="trash" />
             </Button>
           </td>
-          <td width="*">{ formatScalePixelLength(scale) } px</td>
-          <td width="*">
+          <td width="50%">{ formatScalePixelLength(scale) } px</td>
+          <td width="50%">
             { formatLength(scale.length, props.unit) }
             { ' ' }
             { props.unit.shortName }
