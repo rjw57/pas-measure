@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import {
   selectRecord, cancelSelectRecord, fetchRecordIfNeeded,
   addScale, stopDrawingScale, stopDrawingLine, stopDrawingCircle,
-  addLine
+  addLine, addCircle
 } from '../actions.js';
 
 import {
@@ -45,7 +45,7 @@ export default connect(filterState)(React.createClass({
   render: function() {
     const {
       dispatch, showSelectRecordModal, recordsById, selectedRecordId,
-      lengthUnit, scales, interaction, lines,
+      lengthUnit, scales, interaction, lines, circles,
     } = this.props;
 
     // Compute an estimate of pixel length from scale sources
@@ -87,7 +87,7 @@ export default connect(filterState)(React.createClass({
 
     function onAddCircle(s) {
       if(interaction.state === DRAWING_CIRCLE) { dispatch(stopDrawingCircle()); }
-      // dispatch(addCircle(s.startPoint, s.endPoint));
+      dispatch(addCircle(s.startPoint, s.endPoint));
     }
 
     let nextScaleLength;
@@ -101,7 +101,7 @@ export default connect(filterState)(React.createClass({
       <div className="application">
         <div className="application-image">
           <ImageEditor lengthUnit={lengthUnit} imageSrc={imageSrc}
-                       scales={scales} lines={lines}
+                       scales={scales} lines={lines} circles={circles}
                        isDrawingScale={interaction.state === DRAWING_SCALE}
                        nextScaleLength={nextScaleLength}
                        onAddScale={onAddScale}

@@ -192,6 +192,12 @@ class ImageEditor extends React.Component {
       let f = new ol.Feature(geometry);
       return f;
     });
+
+    updateSourceFromFeatures(this.circleSource, nextProps.circles, l => {
+      let geometry = new ol.geom.LineString([l.startPoint, l.endPoint]);
+      let f = new ol.Feature(geometry);
+      return f;
+    });
   }
 
   updateLayerStyles(lengthUnit) {

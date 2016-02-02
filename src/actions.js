@@ -20,6 +20,14 @@ export let addLine = (startPoint, endPoint) => (
 );
 export let removeLine = lineId => ({ type: REMOVE_LINE, id: lineId });
 
+// Adding and removing circles to the current drawing.
+export const ADD_CIRCLE = 'ADD_CIRCLE';
+export const REMOVE_CIRCLE = 'REMOVE_CIRCLE';
+export let addCircle = (startPoint, endPoint) => (
+  { type: ADD_CIRCLE, payload: { startPoint, endPoint } }
+);
+export let removeCircle = circleId => ({ type: REMOVE_CIRCLE, id: circleId });
+
 // Drawing scales
 export const START_DRAWING_SCALE = 'START_DRAWING_SCALE';
 export const STOP_DRAWING_SCALE = 'STOP_DRAWING_SCALE';

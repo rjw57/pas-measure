@@ -7,7 +7,7 @@ import { interaction } from './reducers/interaction.js';
 import { combineReducers } from 'redux';
 
 import {
-  ADD_SCALE, REMOVE_SCALE, ADD_LINE, REMOVE_LINE
+  ADD_SCALE, REMOVE_SCALE, ADD_LINE, REMOVE_LINE, ADD_CIRCLE, REMOVE_CIRCLE
 } from './actions.js';
 
 // Scales
@@ -56,12 +56,35 @@ function lines(state = [], action) {
   }
 }
 
+// Circles
+let nextCircleId = 1;
+function circle(state, action) {
+  switch(action.type) {
+    case ADD_CIRCLE:
+      let { startPoint, endPoint } = action.payload;
+      return { id: nextCircleId++, startPoint, endPoint };
+    default:
+      return state;
+  }
+}
+
+function circles(state = [], action) {
+  switch(action.type) {
+    case ADD_CIRCLE:
+      return [...state, circle(undefined, action)];
+    case REMOVE_CIRCLE:
+      return state.filter(c => c.id !== action.id);
+    default:
+      return state;
+  }
+}
+
 const app = combineReducers({
   selectedRecordId,
   recordsById,
   showSelectRecordModal,
   interaction,
-  scales, lines,
+  scales, lines, circles,
   lengthUnit,
 });
 
