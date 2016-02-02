@@ -1,6 +1,5 @@
 const defaultOuterColor = 'rgba(51, 51, 51, 0.5)';
 const defaultInnerColor = '#ffffff';
-const defaultFillColor = 'rgba(255, 255, 255, 0.2)';
 const defaultPerpPixLen = 20;
 
 // Construct style function for a linear measurement.
@@ -96,7 +95,6 @@ export function circularMeasurementStyle(options) {
   options = Object.assign({
     innerColor: defaultInnerColor,
     outerColor: defaultOuterColor,
-    fillColor: defaultFillColor,
     aboveLabelFunc: () => '',
     belowLabelFunc: () => '',
   }, options);
@@ -109,7 +107,6 @@ export function circularMeasurementStyle(options) {
       color: options.innerColor, width: 2 });
     let outerStrokeStyle = new ol.style.Stroke({
       color: options.outerColor, width: 4 });
-    let fillStyle = new ol.style.Fill({ color: options.fillColor });
 
     let styles = [ ];
 
@@ -143,7 +140,6 @@ export function circularMeasurementStyle(options) {
             image: new ol.style.Circle({
               radius: 0.5 * len / resolution,
               stroke: innerStrokeStyle,
-              fill: fillStyle,
             }),
             zIndex: 100,
           }),

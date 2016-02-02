@@ -10,12 +10,9 @@ import {
 
 require('style!css!./image-editor.css');
 
-const scaleStyleOpts = { innerColor: '#ffcc33' };
-const circleStyleOpts = {
-  innerColor: '#A621A6',
-  //fillColor: 'rgba(210,144,210,0.5)'
-};
-const lineStyleOpts = { innerColor: '#42BF89' };
+const scaleStyleOpts = { innerColor: '#FFE596' };
+const circleStyleOpts = { innerColor: '#AE8BDE' };
+const lineStyleOpts = { innerColor: '#86B6DA' };
 
 function measureLength(lengthInPixels, pixelLengthEstimate) {
   let mu = lengthInPixels * pixelLengthEstimate.mu;
