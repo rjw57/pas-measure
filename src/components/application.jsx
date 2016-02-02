@@ -48,25 +48,24 @@ export default connect(filterState)(React.createClass({
       lengthUnit, scales, interaction, lines,
     } = this.props;
 
-    let pixelLengthMean = 0, pixelLengthSqMean = 0, pixelLengthVariance = 0;
-    let pixelLengthStdDev;
-    if(scales.length >= 2) {
-      let nFeats = scales.length;
-      scales.forEach(s => {
-        let dx = s.endPoint[0] - s.startPoint[0];
-        let dy = s.endPoint[1] - s.startPoint[1];
-        let pixelLength = s.length / Math.sqrt(dx*dx + dy*dy);
-        pixelLengthMean += pixelLength;
-        pixelLengthSqMean += pixelLength * pixelLength;
-      });
-      pixelLengthMean /= nFeats;
-      pixelLengthSqMean /= nFeats;
-      pixelLengthVariance = pixelLengthSqMean -
-        (1.0 - 1.0 / nFeats) * pixelLengthMean * pixelLengthMean;
-      pixelLengthStdDev = Math.sqrt(pixelLengthVariance);
-    } else {
-      pixelLengthMean = null;
-      pixelLengthVariance = null;
+    // Compute an estimate of pixel length from scale sources
+    let pixelLengthSamples = scales.map(s => {
+      let dx = s.endPoint[0] - s.startPoint[0];
+      let dy = s.endPoint[1] - s.startPoint[1];
+      return s.length / Math.sqrt(dx*dx + dy*dy);
+    });
+
+    let pixelLengthEstimate = { mu: null, sigma: null };
+    if(pixelLengthSamples.length >= 2) {
+      let pixelLengthMean = pixelLengthSamples.reduce(
+        (sum, next) => sum + next, 0
+      ) / pixelLengthSamples.length;
+      let pixelLengthVar = pixelLengthSamples.reduce(
+        (sum, next) => Math.pow(next - pixelLengthMean, 2), 0
+      ) / (pixelLengthSamples.length - 1);
+
+      pixelLengthEstimate.mu = pixelLengthMean;
+      pixelLengthEstimate.sigma = Math.sqrt(pixelLengthVar);
     }
 
     let currentRecord, currentRecordIsFetching, imageSrc;
@@ -97,8 +96,6 @@ export default connect(filterState)(React.createClass({
         nextScaleLength = interaction.options.length;
         break;
     }
-
-    let pixelLengthEstimate = { mu: pixelLengthMean, sigma: pixelLengthStdDev };
 
     return (
       <div className="application">
