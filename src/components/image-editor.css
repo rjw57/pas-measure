@@ -1,1 +1,6 @@
 .image-editor-map { width: 100%; height: 100%; }
+.image-editor-tooltip-inner {
+  padding: 0.25em 0.5em; color: #839496; font-size: 12px;
+  background-color: #073642; border-radius: 5px;
+  border: 1px solid #002b36;
+}

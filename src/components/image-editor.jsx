@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { connect } from 'react-redux'
 import ol from 'openlayers';
 
@@ -26,6 +27,17 @@ function measureArea(areaInSqPixels, pixelLengthEstimate) {
   sigma *= mu;
   return { mu, sigma };
 }
+
+const pointerStyles = [
+  new ol.style.Style({
+    image: new ol.style.Circle({
+      radius: 8,
+      stroke: new ol.style.Stroke({
+        color: '#002b36', width: 2
+      }),
+    }),
+  }),
+];
 
 // updateSourceFromFeatures will take a collection of feature objects, each with
 // an associated id, and add or remove features from a source depending on
@@ -123,6 +135,10 @@ class ImageEditor extends React.Component {
     };
 
     this.updateLayerStyles(this.props.lengthUnit);
+
+    this.pointerTooltip = new ol.Overlay({
+      offset: [15, 0], positioning: 'center-left',
+    });
   }
 
   componentDidMount() {
@@ -135,6 +151,14 @@ class ImageEditor extends React.Component {
         this.imageLayer, this.scaleLayer, this.lineLayer, this.circleLayer
       ],
     });
+    this.map.addOverlay(this.pointerTooltip);
+
+    this.map.on('pointermove', evt => this.pointerMove(evt));
+  }
+
+  componentWillUnmount() {
+    this.removeCurrentDrawing();
+    this.map = null;
   }
 
   componentWillReceiveProps(nextProps) {
@@ -197,6 +221,25 @@ class ImageEditor extends React.Component {
       let f = new ol.Feature(geometry);
       return f;
     });
+  }
+
+  pointerMove(evt) {
+    if(evt.dragging) { return; }
+    this.pointerTooltip.setPosition(evt.coordinate);
+  }
+
+  setPointerTooltipText(text) {
+    if(!text) { this.pointerTooltip.setElement(null); return; }
+
+    let inner = document.createElement('div');
+    inner.classList.add('image-editor-tooltip-inner');
+    inner.appendChild(document.createTextNode(text));
+
+    let tooltip = document.createElement('div');
+    tooltip.classList.add('image-editor-tooltip');
+    tooltip.appendChild(inner);
+
+    this.pointerTooltip.setElement(tooltip);
   }
 
   updateLayerStyles(lengthUnit) {
@@ -292,23 +335,6 @@ class ImageEditor extends React.Component {
     if(!this.map) { return; }
     this.removeCurrentDrawing();
 
-    let pointerStyles = [
-      new ol.style.Style({
-        image: new ol.style.Circle({
-          radius: 10,
-          stroke: new ol.style.Stroke({
-            color: 'rgba(0, 0, 0, 0.7)'
-          }),
-          fill: new ol.style.Fill({
-            color: 'rgba(255, 255, 255, 0.2)'
-          })
-        }),
-        text: new ol.style.Text({
-          text: 'foo',
-        }),
-      }),
-    ];
-
     // Create a new drawing
     this.draw = new ol.interaction.Draw({
       // source: source,
@@ -333,6 +359,7 @@ class ImageEditor extends React.Component {
     this.draw.on('drawstart', (event) => {
       sketchFeature = event.feature;
       sketchFeature.length = length;
+      this.setPointerTooltipText('Click to finish drawing scale');
     });
 
     this.draw.on('drawend', () => {
@@ -348,34 +375,19 @@ class ImageEditor extends React.Component {
         });
       }
 
+      this.setPointerTooltipText();
       this.map.removeInteraction(this.draw);
       this.draw = null;
     });
 
     this.map.addInteraction(this.draw);
+    this.setPointerTooltipText('Click to start drawing scale');
   }
 
   startDrawingLine() {
     // NOP if there's no map
     if(!this.map) { return; }
     this.removeCurrentDrawing();
-
-    let pointerStyles = [
-      new ol.style.Style({
-        image: new ol.style.Circle({
-          radius: 10,
-          stroke: new ol.style.Stroke({
-            color: 'rgba(0, 0, 0, 0.7)'
-          }),
-          fill: new ol.style.Fill({
-            color: 'rgba(255, 255, 255, 0.2)'
-          })
-        }),
-        text: new ol.style.Text({
-          text: 'foo',
-        }),
-      }),
-    ];
 
     // Create a new drawing
     this.draw = new ol.interaction.Draw({
@@ -398,7 +410,10 @@ class ImageEditor extends React.Component {
     });
 
     let sketchFeature;
-    this.draw.on('drawstart', (event) => { sketchFeature = event.feature; });
+    this.draw.on('drawstart', (event) => {
+      sketchFeature = event.feature;
+      this.setPointerTooltipText('Click to finish drawing line');
+    });
 
     this.draw.on('drawend', () => {
       if(!this.map) { return; }
@@ -411,34 +426,19 @@ class ImageEditor extends React.Component {
         this.props.onAddLine({ startPoint: coords[0], endPoint: coords[1] });
       }
 
+      this.setPointerTooltipText();
       this.map.removeInteraction(this.draw);
       this.draw = null;
     });
 
     this.map.addInteraction(this.draw);
+    this.setPointerTooltipText('Click to start drawing line');
   }
 
   startDrawingCircle() {
     // NOP if there's no map
     if(!this.map) { return; }
     this.removeCurrentDrawing();
-
-    let pointerStyles = [
-      new ol.style.Style({
-        image: new ol.style.Circle({
-          radius: 10,
-          stroke: new ol.style.Stroke({
-            color: 'rgba(0, 0, 0, 0.7)'
-          }),
-          fill: new ol.style.Fill({
-            color: 'rgba(255, 255, 255, 0.2)'
-          })
-        }),
-        text: new ol.style.Text({
-          text: 'foo',
-        }),
-      }),
-    ];
 
     // Create a new drawing
     this.draw = new ol.interaction.Draw({
@@ -461,7 +461,10 @@ class ImageEditor extends React.Component {
     });
 
     let sketchFeature;
-    this.draw.on('drawstart', (event) => { sketchFeature = event.feature; });
+    this.draw.on('drawstart', (event) => {
+      sketchFeature = event.feature;
+      this.setPointerTooltipText('Click the opposite point on circle');
+    });
 
     this.draw.on('drawend', () => {
       if(!this.map) { return; }
@@ -474,11 +477,13 @@ class ImageEditor extends React.Component {
         this.props.onAddCircle({ startPoint: coords[0], endPoint: coords[1] });
       }
 
+      this.setPointerTooltipText();
       this.map.removeInteraction(this.draw);
       this.draw = null;
     });
 
     this.map.addInteraction(this.draw);
+    this.setPointerTooltipText('Click a point on circle');
   }
 }
 

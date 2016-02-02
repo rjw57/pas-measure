@@ -9,6 +9,8 @@ import {
   requestSelectRecord
 } from '../actions.js';
 
+import { NEUTRAL } from '../reducers/interaction.js';
+
 import { formatLength } from '../utils.js';
 
 import ScaleList from './scale-list.jsx';
@@ -26,8 +28,8 @@ let SidebarSection = (props) => (
 );
 
 function filterState(state) {
-  let { lengthUnit, scales } = state;
-  return { lengthUnit, scales };
+  let { lengthUnit, scales, interaction } = state;
+  return { lengthUnit, scales, interactionState: interaction.state };
 }
 
 class LengthInput extends React.Component {
@@ -92,8 +94,11 @@ class Sidebar extends React.Component {
 
   render() {
     let { dispatch, lengthUnit, scales } = this.props;
-    let addScaleDisabled = !this.props.record ||
-      (this.state.scaleLength === null);
+
+    let isDrawing = this.props.interactionState !== NEUTRAL;
+
+    let addScaleDisabled = isDrawing || (this.state.scaleLength === null);
+
     return (
       <div className="sidebar container-fluid">
         <SidebarSection title="Options">
@@ -120,12 +125,14 @@ class Sidebar extends React.Component {
                        addDisabled={addScaleDisabled} />
         </SidebarSection>
         <SidebarSection title="Lines">
-          <Button block onClick={() => dispatch(startDrawingLine())}>
+          <Button block disabled={isDrawing}
+                  onClick={() => dispatch(startDrawingLine())}>
             <Glyphicon glyph="plus" /> Add line
           </Button>
         </SidebarSection>
         <SidebarSection title="Circles">
-          <Button block onClick={() => dispatch(startDrawingCircle())}>
+          <Button block disabled={isDrawing}
+                  onClick={() => dispatch(startDrawingCircle())}>
             <Glyphicon glyph="plus" /> Add circle
           </Button>
         </SidebarSection>
