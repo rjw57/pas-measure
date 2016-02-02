@@ -49,7 +49,6 @@ class ImageEditor extends React.Component {
 
     // The current draw interaction and sketch feature
     this.draw = null;
-    this.sketchFeature = null;
 
     // URL to current image
     this.imageUrl = null;
@@ -205,16 +204,17 @@ class ImageEditor extends React.Component {
       },
     });
 
+    let sketchFeature;
     this.draw.on('drawstart', (event) => {
-      this.sketchFeature = event.feature;
-      this.sketchFeature.length = worldLength;
+      sketchFeature = event.feature;
+      sketchFeature.length = worldLength;
     });
 
     this.draw.on('drawend', () => {
       if(!this.map) { return; }
 
       let geom;
-      if(this.sketchFeature) { geom = this.sketchFeature.getGeometry(); }
+      if(sketchFeature) { geom = sketchFeature.getGeometry(); }
 
       if(geom && this.props.onAddScale) {
         let coords = geom.getCoordinates();
@@ -225,7 +225,6 @@ class ImageEditor extends React.Component {
 
       this.map.removeInteraction(this.draw);
       this.draw = null;
-      this.sketchFeature = null;
     });
 
     this.map.addInteraction(this.draw);
