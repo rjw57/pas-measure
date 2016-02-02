@@ -1,4 +1,5 @@
-const defaultOuterColor = 'rgba(51, 51, 51, 0.5)';
+//const defaultOuterColor = 'rgba(253, 246, 227, 0.66)';
+const defaultOuterColor = '#fdf6e3';
 const defaultInnerColor = '#ffffff';
 const defaultPerpPixLen = 20;
 
@@ -18,6 +19,7 @@ export function linearMeasurementStyle(options) {
     innerColor: defaultInnerColor,
     outerColor: defaultOuterColor,
     labelFunc: () => '',
+    textShadowSize: 8,
   }, options);
 
   return (feature, resolution) => {
@@ -79,7 +81,7 @@ export function linearMeasurementStyle(options) {
               font: '15px sans-serif',
               fill: new ol.style.Fill({ color: options.innerColor }),
               stroke: new ol.style.Stroke({
-                color: options.outerColor, width: 2 }),
+                color: options.outerColor, width: options.textShadowSize }),
             }),
           }),
         ]);
@@ -97,6 +99,7 @@ export function circularMeasurementStyle(options) {
     outerColor: defaultOuterColor,
     aboveLabelFunc: () => '',
     belowLabelFunc: () => '',
+    textShadowSize: 8,
   }, options);
 
   return (feature, resolution) => {
@@ -160,7 +163,7 @@ export function circularMeasurementStyle(options) {
               font: '15px sans-serif',
               fill: new ol.style.Fill({ color: options.innerColor }),
               stroke: new ol.style.Stroke({
-                color: options.outerColor, width: 2 }),
+                color: options.outerColor, width: options.textShadowSize }),
             }),
           }),
           new ol.style.Style({
@@ -170,7 +173,7 @@ export function circularMeasurementStyle(options) {
               font: '15px sans-serif',
               fill: new ol.style.Fill({ color: options.innerColor }),
               stroke: new ol.style.Stroke({
-                color: options.outerColor, width: 2 }),
+                color: options.outerColor, width: options.textShadowSize }),
             }),
           }),
         ]);

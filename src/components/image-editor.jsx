@@ -10,9 +10,9 @@ import {
 
 require('style!css!./image-editor.css');
 
-const scaleStyleOpts = { innerColor: '#FFE596' };
-const circleStyleOpts = { innerColor: '#AE8BDE' };
-const lineStyleOpts = { innerColor: '#86B6DA' };
+const scaleStyleOpts = { innerColor: '#b58900' };
+const circleStyleOpts = { innerColor: '#268bd2' };
+const lineStyleOpts = { innerColor: '#859900' };
 
 function measureLength(lengthInPixels, pixelLengthEstimate) {
   let mu = lengthInPixels * pixelLengthEstimate.mu;
@@ -81,11 +81,6 @@ class ImageEditor extends React.Component {
       minZoom: -4,
     });
 
-    // A layer for rendering a neutral background
-    this.bgLayer = new ol.layer.Image({
-      zIndex: -2000, source: createNeutralBackgroundSource()
-    });
-
     // Scales
     this.scaleSource = new ol.source.Vector();
     this.scaleLayer = new ol.layer.Vector({ source: this.scaleSource, zIndex: 100 });
@@ -137,8 +132,7 @@ class ImageEditor extends React.Component {
       controls: [],
       view: this.view,
       layers: [
-        this.bgLayer, this.imageLayer, this.scaleLayer, this.lineLayer,
-        this.circleLayer
+        this.imageLayer, this.scaleLayer, this.lineLayer, this.circleLayer
       ],
     });
   }
