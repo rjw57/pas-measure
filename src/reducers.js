@@ -1,69 +1,17 @@
-import { combineReducers } from 'redux'
+import { lengthUnit } from './reducers/length-units.js';
 import {
-  REQUEST_SELECT_RECORD, CANCEL_SELECT_RECORD,
+  showSelectRecordModal, selectedRecordId, recordsById
+} from './reducers/record.js';
 
-  REQUEST_RECORD, RECEIVE_RECORD, SELECT_RECORD,
+import { combineReducers } from 'redux'
 
-  SET_LENGTH_UNIT, LENGTH_UNITS,
-
+import {
   ADD_SCALE, REMOVE_SCALE,
   START_DRAWING_SCALE, STOP_DRAWING_SCALE,
 
   ADD_LINE, REMOVE_LINE,
   START_DRAWING_LINE, STOP_DRAWING_LINE,
 } from './actions.js';
-
-function selectedRecordId(state = null, action) {
-  switch(action.type) {
-    case SELECT_RECORD:
-      return action.id;
-    default:
-      return state;
-  }
-}
-
-const initialRecordState = {
-  isFetching: false,
-  record: null,
-};
-
-function record(state = initialRecordState, action) {
-  switch(action.type) {
-    case REQUEST_RECORD:
-      return Object.assign({}, state, {
-        isFetching: true, record: null
-      });
-    case RECEIVE_RECORD:
-      return Object.assign({}, state, {
-        isFetching: false, record: action.record
-      });
-    default:
-      return state;
-  }
-}
-
-function recordsById(state = {}, action) {
-  switch(action.type) {
-    case RECEIVE_RECORD:
-    case REQUEST_RECORD:
-      return Object.assign({}, state, {
-        [action.id]: record(state[action.id], action),
-      });
-    default:
-      return state;
-  }
-}
-
-function showSelectRecordModal(state = false, action) {
-  switch(action.type) {
-    case REQUEST_SELECT_RECORD:
-      return true;
-    case CANCEL_SELECT_RECORD:
-      return false;
-    default:
-      return state;
-  }
-}
 
 // Scales
 let nextScaleId = 1;
@@ -111,22 +59,9 @@ function lines(state = [], action) {
   }
 }
 
-const features = combineReducers({
-  scales, lines,
-});
+const features = combineReducers({ scales, lines });
 
-function lengthUnit(state = LENGTH_UNITS[0], action) {
-  switch(action.type) {
-    case SET_LENGTH_UNIT:
-      return action.unit;
-    default:
-      return state;
-  }
-}
-
-const options = combineReducers({
-  lengthUnit,
-});
+const options = combineReducers({ lengthUnit });
 
 const initialScaleInteractionState = { isDrawing: false, length: null };
 
