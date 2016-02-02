@@ -112,8 +112,8 @@ class ImageEditor extends React.Component {
     ////// Scale features //////
 
     // Form a set of current scale ids and next scale ids.
-    let scaleIds = new Set(this.props.features.scales.map(s => s.id));
-    let nextScaleIds = new Set(nextProps.features.scales.map(s => s.id));
+    let scaleIds = new Set(this.props.scales.map(s => s.id));
+    let nextScaleIds = new Set(nextProps.scales.map(s => s.id));
 
     // Set of scale ids which have been inserted
     let insertedScaleIds = new Set(
@@ -131,7 +131,7 @@ class ImageEditor extends React.Component {
 
     // Now insert any new scales
     if(insertedScaleIds.size > 0) {
-      nextProps.features.scales.forEach(s => {
+      nextProps.scales.forEach(s => {
         if(!insertedScaleIds.has(s.id)) { return; }
         let geometry = new ol.geom.LineString([s.startPoint, s.endPoint]);
         let f = new ol.Feature(geometry);

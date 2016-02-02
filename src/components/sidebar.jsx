@@ -24,8 +24,8 @@ let SidebarSection = (props) => (
 );
 
 function filterState(state) {
-  let { lengthUnit, features } = state;
-  return { lengthUnit, features };
+  let { lengthUnit, scales } = state;
+  return { lengthUnit, scales };
 }
 
 class LengthInput extends React.Component {
@@ -89,7 +89,7 @@ class Sidebar extends React.Component {
   }
 
   render() {
-    let { dispatch, lengthUnit, features } = this.props;
+    let { dispatch, lengthUnit, scales } = this.props;
     let addScaleDisabled = !this.props.record ||
       (this.state.scaleLength === null);
     return (
@@ -102,8 +102,8 @@ class Sidebar extends React.Component {
         </SidebarSection>
         <SidebarSection title="Scales">
           {
-            features.scales.length > 0 ?
-              <ScaleList scales={features.scales} unit={lengthUnit}
+            scales.length > 0 ?
+              <ScaleList scales={scales} unit={lengthUnit}
                          onDelete={s => this.handleDeleteScale(s)} />
               : null
           }

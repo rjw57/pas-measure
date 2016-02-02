@@ -6,7 +6,7 @@ import {
   addScale, stopDrawingScale
 } from '../actions.js';
 
-import { DRAWING_SCALE } from '../reducers.js';
+import { DRAWING_SCALE } from '../reducers/interaction.js';
 
 import { imageUrlFromRecord } from '../pas-api.js';
 import ImageEditor from './image-editor.jsx'
@@ -42,14 +42,14 @@ export default connect(filterState)(React.createClass({
   render: function() {
     const {
       dispatch, showSelectRecordModal, recordsById, selectedRecordId,
-      lengthUnit, features, interaction,
+      lengthUnit, scales, interaction,
     } = this.props;
 
     let pixelLengthMean = 0, pixelLengthSqMean = 0, pixelLengthVariance = 0;
     let pixelLengthStdDev;
-    if(features.scales.length >= 2) {
-      let nFeats = features.scales.length;
-      features.scales.forEach(s => {
+    if(scales.length >= 2) {
+      let nFeats = scales.length;
+      scales.forEach(s => {
         let dx = s.endPoint[0] - s.startPoint[0];
         let dy = s.endPoint[1] - s.startPoint[1];
         let pixelLength = s.length / Math.sqrt(dx*dx + dy*dy);
@@ -91,7 +91,7 @@ export default connect(filterState)(React.createClass({
       <div className="application">
         <div className="application-image">
           <ImageEditor lengthUnit={lengthUnit} imageSrc={imageSrc}
-                       features={features}
+                       scales={scales}
                        isDrawingScale={interaction.state === DRAWING_SCALE}
                        nextScaleLength={nextScaleLength}
                        onAddScale={onAddScale}
