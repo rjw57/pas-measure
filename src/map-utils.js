@@ -128,22 +128,17 @@ export function circularMeasurementStyle(options) {
         let diameterGeom = new ol.geom.LineString([
           [ cx - 0.5*len, cy ], [ cx + 0.5*len, cy ]
         ]);
+        let circleGeom = new ol.geom.Circle([cx, cy], 0.5*len);
 
         styles = styles.concat([
           new ol.style.Style({
-            geometry: circleCentre,
-            image: new ol.style.Circle({
-              radius: 0.5 * len / resolution,
-              stroke: outerStrokeStyle,
-            }),
+            geometry: circleGeom,
+            stroke: outerStrokeStyle,
             zIndex: 90,
           }),
           new ol.style.Style({
-            geometry: circleCentre,
-            image: new ol.style.Circle({
-              radius: 0.5 * len / resolution,
-              stroke: innerStrokeStyle,
-            }),
+            geometry: circleGeom,
+            stroke: innerStrokeStyle,
             zIndex: 100,
           }),
           new ol.style.Style({
