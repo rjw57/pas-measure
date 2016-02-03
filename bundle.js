@@ -89,10 +89,9 @@
 	), document.getElementById('application-body'));
 	
 	var hashId = window.location.hash.substr(1);
+	
 	if (hashId !== '') {
 	  store.dispatch((0, _actions.selectRecord)(hashId));
-	} else {
-	  store.dispatch((0, _actions.requestSelectRecord)());
 	}
 	
 	store.subscribe(function () {
