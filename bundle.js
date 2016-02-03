@@ -41712,7 +41712,16 @@
 	            onAdd: function onAdd() {
 	              return _this5.handleAddScaleClick();
 	            },
-	            addDisabled: addScaleDisabled })
+	            addDisabled: addScaleDisabled }),
+	          scales.length < 2 ? _react2.default.createElement(
+	            'p',
+	            { className: 'text-muted' },
+	            _react2.default.createElement(
+	              'small',
+	              null,
+	              'At least two scales are required for measurement to be possible. The more scales added, the more accurate the measurements.'
+	            )
+	          ) : null
 	        ),
 	        _react2.default.createElement(
 	          SidebarSection,
