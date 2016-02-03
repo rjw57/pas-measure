@@ -139,13 +139,13 @@ export default connect(filterState)(React.createClass({
                        onAddCircle={onAddCircle}
                        pixelLengthEstimate={pixelLengthEstimate}
                        />
-          <WelcomeOverlay show={showWelcome}
-                          onSelectRecord={() => dispatch(requestSelectRecord())}
-                          />
         </div>
         <div className="application-sidebar">
           <Sidebar record={currentRecord} />
         </div>
+        <WelcomeOverlay show={showWelcome}
+                        onSelectRecord={() => dispatch(requestSelectRecord())}
+                        />
         <SelectRecordModal
           show={showSelectRecordModal} ref="selectRecordModal"
           onCancel={() => dispatch(cancelSelectRecord())}
