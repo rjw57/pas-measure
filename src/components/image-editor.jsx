@@ -28,16 +28,7 @@ function measureArea(areaInSqPixels, pixelLengthEstimate) {
   return { mu, sigma };
 }
 
-const pointerStyles = [
-  new ol.style.Style({
-    image: new ol.style.Circle({
-      radius: 8,
-      stroke: new ol.style.Stroke({
-        color: '#002b36', width: 2
-      }),
-    }),
-  }),
-];
+const pointerStyles = [ ];
 
 // updateSourceFromFeatures will take a collection of feature objects, each with
 // an associated id, and add or remove features from a source depending on
