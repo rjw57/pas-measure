@@ -41438,6 +41438,10 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
+	var _reactDom = __webpack_require__(181);
+	
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+	
 	var _reactBootstrap = __webpack_require__(202);
 	
 	var _reactRedux = __webpack_require__(182);
@@ -41576,7 +41580,7 @@
 	
 	    var _this4 = _possibleConstructorReturn(this, Object.getPrototypeOf(Sidebar).call(this, props));
 	
-	    _this4.state = { scaleLength: null };
+	    _this4.state = { scaleLength: null, addScaleOverlayDismissed: false };
 	    return _this4;
 	  }
 	
@@ -41615,14 +41619,7 @@
 	      var isDrawing = this.props.interactionState !== _interaction.NEUTRAL;
 	
 	      var addScaleDisabled = isDrawing || this.state.scaleLength === null;
-	
-	      var addScaleTooltip = _react2.default.createElement(
-	        _reactBootstrap.Tooltip,
-	        { id: 'add-scale-tooltip' },
-	        'Enter a value and click "',
-	        _react2.default.createElement(_reactBootstrap.Glyphicon, { glyph: 'plus' }),
-	        '".'
-	      );
+	      var showAddScaleOverlay = !!this.props.record && !this.state.addScaleOverlayDismissed && scales.length < 2;
 	
 	      return _react2.default.createElement(
 	        'div',
@@ -41651,33 +41648,46 @@
 	        _react2.default.createElement(
 	          SidebarSection,
 	          { title: 'Scales' },
+	          _react2.default.createElement(LengthInput, { ref: 'lengthInput', unit: lengthUnit,
+	            onInput: function onInput(l) {
+	              return _this5.setState({ scaleLength: l });
+	            },
+	            onAdd: function onAdd() {
+	              return _this5.handleAddScaleClick();
+	            },
+	            addDisabled: addScaleDisabled }),
+	          _react2.default.createElement(
+	            _reactBootstrap.Overlay,
+	            { placement: 'left', show: showAddScaleOverlay,
+	              target: function target() {
+	                return _reactDom2.default.findDOMNode(_this5.refs.lengthInput);
+	              }
+	            },
+	            _react2.default.createElement(
+	              _reactBootstrap.Popover,
+	              { id: 'add-scale-help' },
+	              _react2.default.createElement(
+	                'p',
+	                null,
+	                'Enter a length and click ',
+	                _react2.default.createElement(_reactBootstrap.Glyphicon, { glyph: 'plus' }),
+	                '. At least two scales are required for measurement to be possible. The more scales added, the more accurate the measurements.'
+	              ),
+	              _react2.default.createElement(
+	                _reactBootstrap.Button,
+	                { bsSize: 'small', bsStyle: 'primary',
+	                  onClick: function onClick() {
+	                    return _this5.setState({ addScaleOverlayDismissed: true });
+	                  }
+	                },
+	                'Got it!'
+	              )
+	            )
+	          ),
 	          scales.length > 0 ? _react2.default.createElement(_scaleList2.default, { scales: scales, unit: lengthUnit,
 	            onDelete: function onDelete(s) {
 	              return _this5.handleDeleteScale(s);
-	            } }) : null,
-	          _react2.default.createElement(
-	            _reactBootstrap.OverlayTrigger,
-	            { placement: 'top', overlay: addScaleTooltip,
-	              defaultOverlayShown: true,
-	              rootClose: true },
-	            _react2.default.createElement(LengthInput, { unit: lengthUnit,
-	              onInput: function onInput(l) {
-	                return _this5.setState({ scaleLength: l });
-	              },
-	              onAdd: function onAdd() {
-	                return _this5.handleAddScaleClick();
-	              },
-	              addDisabled: addScaleDisabled })
-	          ),
-	          scales.length < 2 ? _react2.default.createElement(
-	            'p',
-	            { className: 'text-muted' },
-	            _react2.default.createElement(
-	              'small',
-	              null,
-	              'At least two scales are required for measurement to be possible. The more scales added, the more accurate the measurements.'
-	            )
-	          ) : null
+	            } }) : null
 	        ),
 	        _react2.default.createElement(
 	          SidebarSection,
