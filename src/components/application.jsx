@@ -1,10 +1,11 @@
 import React from 'react';
-import { connect } from 'react-redux'
+import { connect } from 'react-redux';
+import { Button } from 'react-bootstrap';
 
 import {
   selectRecord, cancelSelectRecord, fetchRecordIfNeeded,
   addScale, stopDrawingScale, stopDrawingLine, stopDrawingCircle,
-  addLine, addCircle
+  addLine, addCircle, requestSelectRecord
 } from '../actions.js';
 
 import {
@@ -21,6 +22,31 @@ require('style!css!./application.css');
 function filterState(state) {
   return state;
 }
+
+let WelcomeOverlay = props => (
+  <div className={'application-welcome-overlay ' + (props.show ? '' : 'hidden')}>
+    <div className="application-welcome-overlay-inner container-fluid">
+      <div className="jumbotron">
+        <h1>Let's get measuring&hellip;</h1>
+        <p>
+          This site lets you measure the dimensions of objects recorded in
+          the <a href="https://finds.org.uk/">Portable Antiquities Scheme's
+          database</a>. The records need to have an associated image with
+          visible scale.
+        </p>
+        <p>
+          Before you can start you need to select a record from the database.
+        </p>
+        <p>
+          <Button onClick={props.onSelectRecord}
+                  bsStyle="primary" bsSize="large">
+            Select a record
+          </Button>
+        </p>
+      </div>
+    </div>
+  </div>
+);
 
 export default connect(filterState)(React.createClass({
   handleSelectRecordModalSubmit: function() {
@@ -97,6 +123,8 @@ export default connect(filterState)(React.createClass({
         break;
     }
 
+    let showWelcome = !currentRecord && !currentRecordIsFetching;
+
     return (
       <div className="application">
         <div className="application-image">
@@ -111,6 +139,9 @@ export default connect(filterState)(React.createClass({
                        onAddCircle={onAddCircle}
                        pixelLengthEstimate={pixelLengthEstimate}
                        />
+          <WelcomeOverlay show={showWelcome}
+                          onSelectRecord={() => dispatch(requestSelectRecord())}
+                          />
         </div>
         <div className="application-sidebar">
           <Sidebar record={currentRecord} />
