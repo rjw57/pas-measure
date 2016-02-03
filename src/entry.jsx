@@ -25,10 +25,9 @@ render(
 
 import { requestSelectRecord, selectRecord } from './actions.js';
 let hashId = window.location.hash.substr(1);
+
 if(hashId !== '') {
   store.dispatch(selectRecord(hashId));
-} else {
-  store.dispatch(requestSelectRecord());
 }
 
 store.subscribe(() => {
