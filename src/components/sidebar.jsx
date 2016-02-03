@@ -133,6 +133,13 @@ class Sidebar extends React.Component {
                        onInput={l => this.setState({ scaleLength: l })}
                        onAdd={() => this.handleAddScaleClick()}
                        addDisabled={addScaleDisabled} />
+          { scales.length < 2 ?
+            (<p className="text-muted"><small>
+              At least two scales are required for measurement to be possible.
+              The more scales added, the more accurate the measurements.
+            </small></p>)
+            : null
+          }
         </SidebarSection>
         <SidebarSection title="Lines">
           { lines.length > 0 ?
