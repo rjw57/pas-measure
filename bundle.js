@@ -22384,11 +22384,6 @@
 	          isDrawingCircle: interaction.state === _interaction.DRAWING_CIRCLE,
 	          onAddCircle: onAddCircle,
 	          pixelLengthEstimate: pixelLengthEstimate
-	        }),
-	        _react2.default.createElement(WelcomeOverlay, { show: showWelcome,
-	          onSelectRecord: function onSelectRecord() {
-	            return dispatch((0, _actions.requestSelectRecord)());
-	          }
 	        })
 	      ),
 	      _react2.default.createElement(
@@ -22396,6 +22391,11 @@
 	        { className: 'application-sidebar' },
 	        _react2.default.createElement(_sidebar2.default, { record: currentRecord })
 	      ),
+	      _react2.default.createElement(WelcomeOverlay, { show: showWelcome,
+	        onSelectRecord: function onSelectRecord() {
+	          return dispatch((0, _actions.requestSelectRecord)());
+	        }
+	      }),
 	      _react2.default.createElement(_selectRecordModal2.default, {
 	        show: showSelectRecordModal, ref: 'selectRecordModal',
 	        onCancel: function onCancel() {
@@ -42056,7 +42056,7 @@
 	
 	
 	// module
-	exports.push([module.id, ".application { position: fixed; left: 0; right: 0; top: 0; bottom: 0; }\n.application-image, .application-sidebar {\n  position: absolute; top: 0; bottom: 0;\n}\n\n.application-image { left: 0; right: 20em; }\n.application-sidebar { right: 0; width: 20em; }\n\n.application-sidebar {\n  border-left: 1px solid rgb(225, 225, 232);\n  overflow-y: auto;\n}\n\n.application-image { background-color: #002b36; }\n\n.application-welcome-overlay {\n  position: absolute; top: 0; bottom: 0; left: 0; right: 0;\n  background-color: rgba(0, 0, 0, 0.5);\n}\n\n.application-welcome-overlay-inner {\n  margin: 100px auto 0px auto; background-color: white;\n  max-width: 60em; padding: 30px 30px 0px 30px; border-radius: 8px;\n}\n", ""]);
+	exports.push([module.id, ".application { position: fixed; left: 0; right: 0; top: 0; bottom: 0; }\n.application-image, .application-sidebar {\n  position: absolute; top: 0; bottom: 0;\n}\n\n.application-image { left: 0; right: 20em; }\n.application-sidebar { right: 0; width: 20em; }\n\n.application-sidebar {\n  border-left: 1px solid rgb(225, 225, 232);\n  overflow-y: auto;\n}\n\n.application-image { background-color: #002b36; }\n\n.application-welcome-overlay {\n  position: absolute; top: 0; bottom: 0; left: 0; right: 0;\n  background-color: rgba(0, 0, 0, 0.5);\n  z-index: 10;\n}\n\n.application-welcome-overlay-inner {\n  margin: 100px auto 0px auto; background-color: white;\n  max-width: 60em; padding: 30px 30px 0px 30px; border-radius: 8px;\n  box-shadow: 0px 0px 8px #000000;\n}\n", ""]);
 	
 	// exports
 
