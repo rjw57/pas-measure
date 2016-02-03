@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Input, Glyphicon } from 'react-bootstrap';
+import { Button, Input, Glyphicon, Tooltip, OverlayTrigger } from 'react-bootstrap';
 import { connect } from 'react-redux'
 
 import {
@@ -109,6 +109,10 @@ class Sidebar extends React.Component {
 
     let addScaleDisabled = isDrawing || (this.state.scaleLength === null);
 
+    let addScaleTooltip = (<Tooltip id="add-scale-tooltip">
+      Enter a value and click "<Glyphicon glyph="plus" />".
+    </Tooltip>);
+
     return (
       <div className="sidebar container-fluid">
         <SidebarSection title="Options">
@@ -129,10 +133,14 @@ class Sidebar extends React.Component {
                          onDelete={s => this.handleDeleteScale(s)} />
               : null
           }
-          <LengthInput unit={lengthUnit}
-                       onInput={l => this.setState({ scaleLength: l })}
-                       onAdd={() => this.handleAddScaleClick()}
-                       addDisabled={addScaleDisabled} />
+          <OverlayTrigger placement="top" overlay={addScaleTooltip}
+                          defaultOverlayShown={true}
+                          rootClose={true} >
+            <LengthInput unit={lengthUnit}
+                         onInput={l => this.setState({ scaleLength: l })}
+                         onAdd={() => this.handleAddScaleClick()}
+                         addDisabled={addScaleDisabled} />
+          </OverlayTrigger>
           { scales.length < 2 ?
             (<p className="text-muted"><small>
               At least two scales are required for measurement to be possible.
