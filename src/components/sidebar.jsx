@@ -1,5 +1,6 @@
 import React from 'react';
-import { Button, Input, Glyphicon, Tooltip, OverlayTrigger } from 'react-bootstrap';
+import ReactDOM from 'react-dom';
+import { Button, Input, Glyphicon, Popover, Overlay } from 'react-bootstrap';
 import { connect } from 'react-redux'
 
 import {
@@ -83,7 +84,7 @@ class LengthInput extends React.Component {
 class Sidebar extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { scaleLength: null };
+    this.state = { scaleLength: null, addScaleOverlayDismissed: false };
   }
 
   handleAddScaleClick() {
@@ -108,10 +109,8 @@ class Sidebar extends React.Component {
     let isDrawing = this.props.interactionState !== NEUTRAL;
 
     let addScaleDisabled = isDrawing || (this.state.scaleLength === null);
-
-    let addScaleTooltip = (<Tooltip id="add-scale-tooltip">
-      Enter a value and click "<Glyphicon glyph="plus" />".
-    </Tooltip>);
+    let showAddScaleOverlay = !!this.props.record &&
+      !this.state.addScaleOverlayDismissed && (scales.length < 2);
 
     return (
       <div className="sidebar container-fluid">
@@ -127,26 +126,31 @@ class Sidebar extends React.Component {
                         />
         </SidebarSection>
         <SidebarSection title="Scales">
+          <LengthInput ref="lengthInput" unit={lengthUnit}
+                       onInput={l => this.setState({ scaleLength: l })}
+                       onAdd={() => this.handleAddScaleClick()}
+                       addDisabled={addScaleDisabled} />
+          <Overlay placement="left" show={showAddScaleOverlay}
+                   target={() => ReactDOM.findDOMNode(this.refs.lengthInput)}
+                   >
+            <Popover id="add-scale-help">
+              <p>
+              Enter a length and click <Glyphicon glyph="plus" />. At least two
+              scales are required for measurement to be possible. The more
+              scales added, the more accurate the measurements.
+              </p>
+              <Button bsSize="small" bsStyle="primary"
+                      onClick={() => this.setState({ addScaleOverlayDismissed: true })}
+                      >
+                Got it!
+              </Button>
+            </Popover>
+          </Overlay>
           {
             scales.length > 0 ?
               <ScaleList scales={scales} unit={lengthUnit}
                          onDelete={s => this.handleDeleteScale(s)} />
               : null
-          }
-          <OverlayTrigger placement="top" overlay={addScaleTooltip}
-                          defaultOverlayShown={true}
-                          rootClose={true} >
-            <LengthInput unit={lengthUnit}
-                         onInput={l => this.setState({ scaleLength: l })}
-                         onAdd={() => this.handleAddScaleClick()}
-                         addDisabled={addScaleDisabled} />
-          </OverlayTrigger>
-          { scales.length < 2 ?
-            (<p className="text-muted"><small>
-              At least two scales are required for measurement to be possible.
-              The more scales added, the more accurate the measurements.
-            </small></p>)
-            : null
           }
         </SidebarSection>
         <SidebarSection title="Lines">
