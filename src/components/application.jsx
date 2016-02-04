@@ -17,7 +17,7 @@ import ImageEditor from './image-editor.jsx'
 import SelectRecordModal from './select-record-modal.jsx';
 import Sidebar from './sidebar.jsx'
 
-require('style!css!./application.css');
+require('./application.css');
 
 function filterState(state) {
   return state;

@@ -7,7 +7,7 @@ import {
 
 const recordUrlPlaceholder = 'https://finds.org.uk/database/artefacts/record/id/764383';
 
-require('style!css!./select-record-modal.css');
+require('./select-record-modal.css');
 
 export default React.createClass({
   getInitialState: function() { return {

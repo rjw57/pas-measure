@@ -9,7 +9,7 @@ import {
   linearMeasurementStyle, circularMeasurementStyle
 } from '../map-utils.js';
 
-require('style!css!./image-editor.css');
+require('./image-editor.css');
 
 const scaleStyleOpts = { innerColor: '#b58900' };
 const circleStyleOpts = { innerColor: '#268bd2' };

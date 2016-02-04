@@ -1,9 +1,4 @@
-SRCDIR:=src
 BUILDDIR:=build
-
-STATICFILES:= \
-	index.html \
-	ol.css ol.js
 
 NPM?=$(shell which npm)
 ifeq ($(NPM),)
@@ -13,23 +8,15 @@ endif
 NPMBIN=$(shell npm bin)
 WEBPACK=$(NPMBIN)/webpack
 
-all: copy pack
+all: pack
 
-watch: copy
+watch:
 	"$(WEBPACK)" --watch
-
-copy: $(addprefix $(BUILDDIR)/,$(STATICFILES))
 
 pack:
 	"$(WEBPACK)"
 
-$(BUILDDIR):
-	mkdir -p "$(BUILDDIR)"
-
-$(BUILDDIR)/%: $(SRCDIR)/% $(BUILDDIR)
-	cp "$<" "$@"
-
 clean:
 	rm -rf "$(BUILDDIR)"
 
-.PHONY: all copy pack clean watch
+.PHONY: all pack clean watch
