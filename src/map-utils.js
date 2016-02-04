@@ -1,3 +1,5 @@
+import ol from 'openlayers';
+
 //const defaultOuterColor = 'rgba(253, 246, 227, 0.66)';
 const defaultOuterColor = '#fdf6e3';
 const defaultInnerColor = '#ffffff';
