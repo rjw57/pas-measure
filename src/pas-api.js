@@ -12,12 +12,12 @@ export function fetchRecordById(id) {
     }
     return response.json();
   }).then(record => {
-      // Curiously the record returned as a JSON format is an array rather than an
+    // Curiously the record returned as a JSON format is an array rather than an
     // object. This may need fixing...
     if(record && (record[0] === 'record')) { record = record[1][0]; }
 
     // Attempt to handle "fixed" case.
-    if(record && (record['record'])) { record = record['record']; }
+    if(record && (record['record'])) { record = record['record'][0]; }
 
     return record;
   });
@@ -59,7 +59,7 @@ export function loadRecordFromJsonUrl(jsonUrl) {
     if(record && (record[0] === 'record')) { record = record[1][0]; }
 
     // Attempt to handle "fixed" case.
-    if(record && (record['record'])) { record = record['record']; }
+    if(record && (record['record'])) { record = record['record'][0]; }
 
     return record;
   });
